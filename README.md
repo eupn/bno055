@@ -18,18 +18,17 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
     
 2. Instantiate and init the device:
     ```rust
-    use bno055;
-
-    pub fn init(i2c: I2c, delay: Delay) -> Result<bno055::Bno055, Error> {
-       let imu = bno055::Bno055::new(i2c, delay);
+    // ... declare and configure your I2c and Delay implementations ...
     
-       imu.init()?;
+    // Init BNO055 IMU
+    let imu = bno055::Bno055::new(i2c, delay);
     
-       // Enable 9-degrees-of-freedom sensor fusion mode with fast magnetometer calibration
-       imu.set_mode(bno055::BNO055OperationMode::NDOF)?;
+    imu.init()?;
     
-       Ok(imu)
-    }
+    // Enable 9-degrees-of-freedom sensor fusion mode with fast magnetometer calibration
+    imu.set_mode(bno055::BNO055OperationMode::NDOF)?;
+    
+    Ok(imu)
     ```
 
 3. Read orientation data: quaternion or euler angles (roll, pitch, yaw/heading)
