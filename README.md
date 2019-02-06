@@ -41,3 +41,20 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
     // or:
     let euler = imu.euler_angles()?;
     ```
+
+## Status
+
+What is done and tested and what is not yet:
+
+- [x] Sensor initialization
+- [x] Device mode setup
+- [x] Device status readout
+- [x] Calibration status readout
+- [ ] Calibration data readout
+- [ ] Calibration data setup
+- [ ] Orientation data readout
+    - [x] Quaternions
+    - [x] Euler angles
+    - [ ] Raw accelerometer data readout
+    - [ ] Raw gyroscope data readout
+    - [ ] Raw magnetometer data readout
