@@ -54,6 +54,7 @@ What is done and tested and what is not yet:
 - [x] Calibration status readout
 - [ ] Calibration data readout
 - [ ] Calibration data setup
+- [ ] Axis remap
 - [ ] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
