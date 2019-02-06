@@ -10,6 +10,9 @@ categories = [
     "hardware-support",
     "no-std",
 ]
+license = "MIT"
+license-file = "LICENSE"
+readme = "README.md"
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
