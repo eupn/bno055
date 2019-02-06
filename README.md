@@ -4,6 +4,8 @@
 ![](https://img.shields.io/crates/v/bno055.svg?style=flat)
 ![](https://img.shields.io/crates/d/bno055.svg?maxAge=3600)
 
+![](bno055.jpg)
+
 ## What is this?
 
 This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) BNO055.
