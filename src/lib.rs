@@ -2,7 +2,6 @@
 
 ///! Bosch Sensortec BNO055 9-axis IMU sensor driver.
 ///! Datasheet: https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf
-
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Write, WriteRead},
@@ -131,27 +130,23 @@ where
     }
 
     pub fn set_axis_remap(&mut self, remap: AxisRemap) -> Result<(), Error<E>> {
-        let remap_value =
-            ((remap.x.bits() & 0b11) << 0) |
-            ((remap.y.bits() & 0b11) << 2) |
-            ((remap.z.bits() & 0b11) << 4);
+        let remap_value = ((remap.x.bits() & 0b11) << 0)
+            | ((remap.y.bits() & 0b11) << 2)
+            | ((remap.z.bits() & 0b11) << 4);
 
-        self
-            .write_u8(BNO055_AXIS_MAP_CONFIG, remap_value)
+        self.write_u8(BNO055_AXIS_MAP_CONFIG, remap_value)
             .map_err(Error::I2c)?;
 
         Ok(())
     }
 
     pub fn axis_remap(&mut self) -> Result<AxisRemap, Error<E>> {
-        let value = self
-            .read_u8(BNO055_AXIS_MAP_CONFIG)
-            .map_err(Error::I2c)?;
+        let value = self.read_u8(BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
 
         let remap = AxisRemap {
             x: BNO055AxisConfig::from_bits_truncate((value >> 0) & 0b11),
             y: BNO055AxisConfig::from_bits_truncate((value >> 2) & 0b11),
-            z: BNO055AxisConfig::from_bits_truncate((value >> 4) & 0b11)
+            z: BNO055AxisConfig::from_bits_truncate((value >> 4) & 0b11),
         };
 
         Ok(remap)
@@ -290,11 +285,11 @@ where
     /// Checks whether the device is in Sensor Fusion mode or not.
     pub fn is_in_fusion_mode(&mut self) -> Result<bool, Error<E>> {
         let is_in_fusion = match self.mode {
-                | BNO055OperationMode::IMU
-                | BNO055OperationMode::COMPASS
-                | BNO055OperationMode::M4G
-                | BNO055OperationMode::NDOF_FMC_OFF
-                | BNO055OperationMode::NDOF => true,
+            BNO055OperationMode::IMU
+            | BNO055OperationMode::COMPASS
+            | BNO055OperationMode::M4G
+            | BNO055OperationMode::NDOF_FMC_OFF
+            | BNO055OperationMode::NDOF => true,
 
             _ => false,
         };
@@ -466,7 +461,7 @@ impl AxisRemap {
 pub struct AxisRemap {
     x: BNO055AxisConfig,
     y: BNO055AxisConfig,
-    z: BNO055AxisConfig
+    z: BNO055AxisConfig,
 }
 
 pub struct AxisRemapBuilder {
@@ -480,7 +475,7 @@ impl AxisRemap {
                 x: BNO055AxisConfig::AXIS_AS_X,
                 y: BNO055AxisConfig::AXIS_AS_Y,
                 z: BNO055AxisConfig::AXIS_AS_Z,
-            }
+            },
         }
     }
 }
@@ -499,9 +494,7 @@ impl AxisRemapBuilder {
 
         self.remap.x = to;
 
-        AxisRemapBuilder {
-            remap: self.remap,
-        }
+        AxisRemapBuilder { remap: self.remap }
     }
 
     pub fn swap_y_with(mut self, to: BNO055AxisConfig) -> AxisRemapBuilder {
@@ -517,9 +510,7 @@ impl AxisRemapBuilder {
 
         self.remap.y = to;
 
-        AxisRemapBuilder {
-            remap: self.remap,
-        }
+        AxisRemapBuilder { remap: self.remap }
     }
 
     pub fn swap_z_with(mut self, to: BNO055AxisConfig) -> AxisRemapBuilder {
@@ -535,18 +526,14 @@ impl AxisRemapBuilder {
 
         self.remap.z = to;
 
-        AxisRemapBuilder {
-            remap: self.remap,
-        }
+        AxisRemapBuilder { remap: self.remap }
     }
 
     fn is_invalid(&self) -> bool {
         // Each axis must be swapped only once,
         // For example, one cannot remap X to Y and Z to Y at the same time, or similar.
         // See datasheet, section 3.4.
-        self.remap.x == self.remap.y
-            || self.remap.y == self.remap.z
-            || self.remap.z == self.remap.x
+        self.remap.x == self.remap.y || self.remap.y == self.remap.z || self.remap.z == self.remap.x
     }
 
     pub fn build(self) -> Result<AxisRemap, ()> {
