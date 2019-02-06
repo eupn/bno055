@@ -1,5 +1,9 @@
 ## Bosch Sensortec BNO055 embedded-hal driver
 
+[![Build Status](https://travis-ci.org/copterust/bno055.svg?branch=master)](https://travis-ci.org/eupn/bno055)
+![](https://img.shields.io/crates/v/bno055.svg?style=flat)
+![](https://img.shields.io/crates/d/bno055.svg?maxAge=3600)
+
 ## What is this?
 
 This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) BNO055.
