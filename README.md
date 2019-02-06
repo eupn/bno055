@@ -1,10 +1,14 @@
 ## Bosch Sensortec BNO055 embedded-hal driver
 
-### What is this?
+## What is this?
 
-This is a [embedded-hal]() driver for Bosch's inertial measurement unit (IMU) BNO055.
+This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) BNO055.
 
-### Usage
+It is device-agnostic and uses `I2c` and `Delay` embedded-hal traits for its operation.
+
+Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://toxiclibs.org/docs/core/toxi/geom/Quaternion.html) and [Rotation3](https://www.nalgebra.org/rustdoc/nalgebra/geometry/type.Rotation3.html) for Euler angles.
+
+## Usage
 
 1. Add dependency to `Cargo.toml`:
 
