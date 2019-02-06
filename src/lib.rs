@@ -130,6 +130,33 @@ where
         Ok(())
     }
 
+    pub fn set_axis_remap(&mut self, remap: AxisRemap) -> Result<(), Error<E>> {
+        let remap_value =
+            ((remap.x.bits() & 0b11) << 0) |
+            ((remap.y.bits() & 0b11) << 2) |
+            ((remap.z.bits() & 0b11) << 4);
+
+        self
+            .write_u8(BNO055_AXIS_MAP_CONFIG, remap_value)
+            .map_err(Error::I2c)?;
+
+        Ok(())
+    }
+
+    pub fn axis_remap(&mut self) -> Result<AxisRemap, Error<E>> {
+        let value = self
+            .read_u8(BNO055_AXIS_MAP_CONFIG)
+            .map_err(Error::I2c)?;
+
+        let remap = AxisRemap {
+            x: BNO055AxisConfig::from_bits_truncate((value >> 0) & 0b11),
+            y: BNO055AxisConfig::from_bits_truncate((value >> 2) & 0b11),
+            z: BNO055AxisConfig::from_bits_truncate((value >> 4) & 0b11)
+        };
+
+        Ok(remap)
+    }
+
     /// Gets the revision of software, bootloader, accelerometer, magnetometer, and gyroscope of
     /// the BNO055 device.
     pub fn get_revision(&mut self) -> Result<BNO055Revision, Error<E>> {
@@ -412,6 +439,124 @@ pub const BNO055_ACC_RADIUS_LSB: u8 = 0x67;
 pub const BNO055_ACC_RADIUS_MSB: u8 = 0x68;
 pub const BNO055_MAG_RADIUS_LSB: u8 = 0x69;
 pub const BNO055_MAG_RADIUS_MSB: u8 = 0x6A;
+
+bitflags! {
+    pub struct BNO055AxisConfig: u8 {
+        const AXIS_AS_X = 0b00;
+        const AXIS_AS_Y = 0b01;
+        const AXIS_AS_Z = 0b10;
+    }
+}
+
+impl AxisRemap {
+    pub fn x(&self) -> BNO055AxisConfig {
+        self.x
+    }
+
+    pub fn y(&self) -> BNO055AxisConfig {
+        self.x
+    }
+
+    pub fn z(&self) -> BNO055AxisConfig {
+        self.z
+    }
+}
+
+#[derive(Debug)]
+pub struct AxisRemap {
+    x: BNO055AxisConfig,
+    y: BNO055AxisConfig,
+    z: BNO055AxisConfig
+}
+
+pub struct AxisRemapBuilder {
+    remap: AxisRemap,
+}
+
+impl AxisRemap {
+    pub fn builder() -> AxisRemapBuilder {
+        AxisRemapBuilder {
+            remap: AxisRemap {
+                x: BNO055AxisConfig::AXIS_AS_X,
+                y: BNO055AxisConfig::AXIS_AS_Y,
+                z: BNO055AxisConfig::AXIS_AS_Z,
+            }
+        }
+    }
+}
+
+impl AxisRemapBuilder {
+    pub fn swap_x_with(mut self, to: BNO055AxisConfig) -> AxisRemapBuilder {
+        let old_x = self.remap.x;
+
+        match to {
+            BNO055AxisConfig::AXIS_AS_X => self.remap.x = old_x,
+            BNO055AxisConfig::AXIS_AS_Y => self.remap.y = old_x,
+            BNO055AxisConfig::AXIS_AS_Z => self.remap.z = old_x,
+
+            _ => (),
+        }
+
+        self.remap.x = to;
+
+        AxisRemapBuilder {
+            remap: self.remap,
+        }
+    }
+
+    pub fn swap_y_with(mut self, to: BNO055AxisConfig) -> AxisRemapBuilder {
+        let old_y = self.remap.y;
+
+        match to {
+            BNO055AxisConfig::AXIS_AS_X => self.remap.x = old_y,
+            BNO055AxisConfig::AXIS_AS_Y => self.remap.y = old_y,
+            BNO055AxisConfig::AXIS_AS_Z => self.remap.z = old_y,
+
+            _ => (),
+        }
+
+        self.remap.y = to;
+
+        AxisRemapBuilder {
+            remap: self.remap,
+        }
+    }
+
+    pub fn swap_z_with(mut self, to: BNO055AxisConfig) -> AxisRemapBuilder {
+        let old_z = self.remap.z;
+
+        match to {
+            BNO055AxisConfig::AXIS_AS_X => self.remap.x = old_z,
+            BNO055AxisConfig::AXIS_AS_Y => self.remap.y = old_z,
+            BNO055AxisConfig::AXIS_AS_Z => self.remap.z = old_z,
+
+            _ => (),
+        }
+
+        self.remap.z = to;
+
+        AxisRemapBuilder {
+            remap: self.remap,
+        }
+    }
+
+    fn is_invalid(&self) -> bool {
+        // Each axis must be swapped only once,
+        // For example, one cannot remap X to Y and Z to Y at the same time, or similar.
+        // See datasheet, section 3.4.
+        self.remap.x == self.remap.y
+            || self.remap.y == self.remap.z
+            || self.remap.z == self.remap.x
+    }
+
+    pub fn build(self) -> Result<AxisRemap, ()> {
+        if self.is_invalid() {
+            Err(())
+        } else {
+            Ok(self.remap)
+        }
+    }
+}
 
 bitflags! {
     pub struct BNO055SystemStatusCode: u8 {

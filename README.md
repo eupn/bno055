@@ -44,6 +44,52 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
     let euler = imu.euler_angles()?;
     ```
 
+## Setup details
+
+### Remapping axes to correspond your mounting
+
+BNO055 allows to change default axes to meet chip orientation with
+actual physical device orientation, thus providing possibility to place BNO055 
+chip on PCB as suitable for designer and to match chip's axes to and physical 
+axes in software later.
+
+```rust
+use bno055::{AxisRemap, BNO055AxisConfig};
+// ...
+
+// Build remap configuration example with X and Y axes swapped:
+let remap = AxisRemap::builder()
+    .swap_x_with(BNO055AxisConfig::AXIS_AS_Y)
+    .build()
+    .expect("Failed to build axis remap config");
+    
+bno055.set_axis_remap(remap)?;
+```
+
+Please note that `AxisRemap` (and the chip itself) builder doesn't allow invalid state to be constructed,
+that is, when one axis is swapped with multiple of others.
+For example, swapping axis `X` with both `Y` and `Z` at the same time is not allowed:
+
+```rust
+AxisRemap::builder()
+    .swap_x_with(BNO055AxisConfig::AXIS_AS_Y)
+    .swap_x_with(BNO055AxisConfig::AXIS_AS_Z)
+    .build()
+    .unwrap(); // <- panics, .build() returned Err
+``` 
+
+### Using external 32k crystal
+
+For better performance, it is advised to connect and use external 32k quartz crystal.
+
+User could enable or disable it by calling `set_external_crystal`:
+
+```rust
+bno055
+    .set_external_crystal(true)
+    .expect("Failed to set to external crystal");
+```
+
 ## Status
 
 What is done and tested and what is not yet:
@@ -52,9 +98,11 @@ What is done and tested and what is not yet:
 - [x] Device mode setup
 - [x] Device status readout
 - [x] Calibration status readout
+- [x] External crystal selection
+- [x] Axis remap
+- [ ] Axis sign change
 - [ ] Calibration data readout
 - [ ] Calibration data setup
-- [ ] Axis remap
 - [ ] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles

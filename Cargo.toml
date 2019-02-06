@@ -10,7 +10,7 @@ categories = [
     "hardware-support",
     "no-std",
 ]
-license = "MIT"
+
 license-file = "LICENSE"
 readme = "README.md"
 
