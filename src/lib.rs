@@ -129,6 +129,7 @@ where
         Ok(())
     }
 
+    /// Configures axis remap of the device.
     pub fn set_axis_remap(&mut self, remap: AxisRemap) -> Result<(), Error<E>> {
         let remap_value = ((remap.x.bits() & 0b11) << 0)
             | ((remap.y.bits() & 0b11) << 2)
@@ -140,6 +141,7 @@ where
         Ok(())
     }
 
+    /// Returns axis remap of the device.
     pub fn axis_remap(&mut self) -> Result<AxisRemap, Error<E>> {
         let value = self.read_u8(BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
 
@@ -150,6 +152,24 @@ where
         };
 
         Ok(remap)
+    }
+
+    /// Configures device's axes sign: positive or negative.
+    pub fn set_axis_sign(&mut self, sign: BNO055AxisSign) -> Result<(), Error<E>> {
+        self
+            .write_u8(BNO055_AXIS_MAP_SIGN, sign.bits())
+            .map_err(Error::I2c)?;
+
+        Ok(())
+    }
+
+    /// Return device's axes sign.
+    pub fn axis_sign(&mut self) -> Result<BNO055AxisSign, Error<E>> {
+        let value = self
+            .read_u8(BNO055_AXIS_MAP_SIGN)
+            .map_err(Error::I2c)?;
+
+        Ok(BNO055AxisSign::from_bits_truncate(value))
     }
 
     /// Gets the revision of software, bootloader, accelerometer, magnetometer, and gyroscope of
@@ -542,6 +562,14 @@ impl AxisRemapBuilder {
         } else {
             Ok(self.remap)
         }
+    }
+}
+
+bitflags! {
+    pub struct BNO055AxisSign: u8 {
+        const X_NEGATIVE = 0b001;
+        const Y_NEGATIVE = 0b010;
+        const Z_NEGATIVE = 0b100;
     }
 }
 

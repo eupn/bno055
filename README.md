@@ -78,6 +78,18 @@ AxisRemap::builder()
     .unwrap(); // <- panics, .build() returned Err
 ``` 
 
+### Changing axes sign
+
+It is also possible to flip sign of either axis of the chip.
+
+Example of flipping X and Y axes:
+
+```rust
+bno055
+    .set_axis_sign(BNO055AxisSign::X_NEGATIVE | bno055::BNO055AxisSign::Y_NEGATIVE)
+    .expect("Unable to communicate");
+```
+
 ### Using external 32k crystal
 
 For better performance, it is advised to connect and use external 32k quartz crystal.
@@ -100,10 +112,11 @@ What is done and tested and what is not yet:
 - [x] Calibration status readout
 - [x] External crystal selection
 - [x] Axis remap
-- [ ] Axis sign change
+- [x] Axis sign setup
 - [ ] Calibration data readout
 - [ ] Calibration data setup
 - [ ] Orientation data readout
+- [ ] Temperature readout
     - [x] Quaternions
     - [x] Euler angles
     - [ ] Raw accelerometer data readout
