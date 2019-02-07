@@ -28,6 +28,7 @@ pub struct Bno055<I, D> {
     i2c: I,
     delay: D,
     pub mode: BNO055OperationMode,
+    use_alternative_addr: bool,
 }
 
 impl<I, D, E> Bno055<I, D>
@@ -42,9 +43,17 @@ where
             i2c,
             delay,
             mode: BNO055OperationMode::CONFIG_MODE,
+            use_alternative_addr: false,
         };
 
         bno
+    }
+
+    /// Enables use of alternative I2C address `BNO055_ALTERNATE_ADDR`.
+    pub fn with_alternative_address(mut self) -> Self {
+        self.use_alternative_addr = true;
+
+        self
     }
 
     /// Initializes the BNO055 device.
@@ -325,7 +334,7 @@ where
             .zip(buf_reg.iter().chain(buf_profile.iter())) { *to = *from }
 
         self.i2c
-            .write(BNO055_DEFAULT_ADDR, &buf_with_reg[..])
+            .write(self.i2c_addr(), &buf_with_reg[..])
             .map_err(Error::I2c)?;
 
         self.set_mode(prev_mode)?;
@@ -361,21 +370,30 @@ where
         Ok(is_in_fusion)
     }
 
+    #[inline(always)]
+    fn i2c_addr(&self) -> u8 {
+        if self.use_alternative_addr {
+            BNO055_ALTERNATE_ADDR
+        } else {
+            BNO055_DEFAULT_ADDR
+        }
+    }
+
     fn read_u8(&mut self, reg: u8) -> Result<u8, E> {
         let mut byte: [u8; 1] = [0; 1];
 
-        match self.i2c.write_read(BNO055_DEFAULT_ADDR, &[reg], &mut byte) {
+        match self.i2c.write_read(self.i2c_addr(), &[reg], &mut byte) {
             Ok(_) => Ok(byte[0]),
             Err(e) => Err(e),
         }
     }
 
     fn read_bytes(&mut self, reg: u8, buf: &mut [u8]) -> Result<(), E> {
-        self.i2c.write_read(BNO055_DEFAULT_ADDR, &[reg], buf)
+        self.i2c.write_read(self.i2c_addr(), &[reg], buf)
     }
 
     fn write_u8(&mut self, reg: u8, value: u8) -> Result<(), E> {
-        self.i2c.write(BNO055_DEFAULT_ADDR, &[reg, value])?;
+        self.i2c.write(self.i2c_addr(), &[reg, value])?;
 
         Ok(())
     }

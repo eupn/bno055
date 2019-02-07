@@ -140,6 +140,17 @@ bno055
     .expect("Failed to set to external crystal");
 ```
 
+### Using alternative I2C address
+
+BNO055 allows to change its I2C address from default `0x28` to alternative `0x29` by setting
+`COM3` pin `HIGH`.
+
+To connect to device with alternative address, enable its use by calling `with_alternative_address()`:
+
+```rust
+let mut bno = bno055::Bno055::new(i2c, delay).with_alternative_address();
+```
+
 ## Status
 
 What is done and tested and what is not yet:
@@ -153,6 +164,7 @@ What is done and tested and what is not yet:
 - [x] Axis sign setup
 - [x] Calibration data readout
 - [x] Calibration data setup
+- [x] Alternative I2C address
 - [ ] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
