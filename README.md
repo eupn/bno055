@@ -159,5 +159,6 @@ What is done and tested and what is not yet:
     - [ ] Raw accelerometer data readout
     - [ ] Raw gyroscope data readout
     - [ ] Raw magnetometer data readout
+- [ ] Linear acceleration data readout
 - [ ] Temperature readout
 - [ ] Interrupts
