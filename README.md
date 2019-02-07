@@ -10,7 +10,7 @@
 
 This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) BNO055.
 
-It is device-agnostic and uses `I2c` and `Delay` embedded-hal traits for its operation.
+It is device-agnostic and uses `Write`/`WriteRead` (I2C) and `Delay` embedded-hal traits for its operation.
 
 Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://toxiclibs.org/docs/core/toxi/geom/Quaternion.html) for quaternion reading and [Rotation3](https://www.nalgebra.org/rustdoc/nalgebra/geometry/type.Rotation3.html) for Euler angles.
 
