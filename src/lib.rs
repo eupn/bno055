@@ -308,8 +308,7 @@ where
 
         let mut buf: [u8; BNO055_CALIB_SIZE] = [0; BNO055_CALIB_SIZE];
 
-        self
-            .read_bytes(BNO055_ACC_OFFSET_X_LSB, &mut buf[..])
+        self.read_bytes(BNO055_ACC_OFFSET_X_LSB, &mut buf[..])
             .map_err(Error::I2c)?;
 
         let res = BNO055Calibration::from_buf(&buf);
@@ -331,7 +330,10 @@ where
         let mut buf_with_reg = [0u8; 1 + BNO055_CALIB_SIZE];
         for (to, from) in buf_with_reg
             .iter_mut()
-            .zip(buf_reg.iter().chain(buf_profile.iter())) { *to = *from }
+            .zip(buf_reg.iter().chain(buf_profile.iter()))
+        {
+            *to = *from
+        }
 
         self.i2c
             .write(self.i2c_addr(), &buf_with_reg[..])
