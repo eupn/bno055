@@ -633,23 +633,6 @@ pub struct BNO055CalibrationStatus {
     pub mag: u8,
 }
 
-#[derive(Debug)]
-pub struct BNO055QuaternionReading {
-    pub w: f32,
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-}
-
-/// Orientation data in format of Euler angles.
-/// Units are in degrees.
-#[derive(Debug)]
-pub struct BNO055EulerAnglesDeg {
-    pub heading: f32,
-    pub roll: f32,
-    pub pitch: f32,
-}
-
 #[derive(Copy, Clone, PartialEq)]
 #[repr(u8)]
 pub enum BNO055RegisterPage {
