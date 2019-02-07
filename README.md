@@ -115,8 +115,8 @@ What is done and tested and what is not yet:
 - [x] Axis sign setup
 - [ ] Calibration data readout
 - [ ] Calibration data setup
-- [ ] Orientation data readout
 - [ ] Temperature readout
+- [ ] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
     - [ ] Raw accelerometer data readout
