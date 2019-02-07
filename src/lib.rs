@@ -156,8 +156,7 @@ where
 
     /// Configures device's axes sign: positive or negative.
     pub fn set_axis_sign(&mut self, sign: BNO055AxisSign) -> Result<(), Error<E>> {
-        self
-            .write_u8(BNO055_AXIS_MAP_SIGN, sign.bits())
+        self.write_u8(BNO055_AXIS_MAP_SIGN, sign.bits())
             .map_err(Error::I2c)?;
 
         Ok(())
@@ -165,9 +164,7 @@ where
 
     /// Return device's axes sign.
     pub fn axis_sign(&mut self) -> Result<BNO055AxisSign, Error<E>> {
-        let value = self
-            .read_u8(BNO055_AXIS_MAP_SIGN)
-            .map_err(Error::I2c)?;
+        let value = self.read_u8(BNO055_AXIS_MAP_SIGN).map_err(Error::I2c)?;
 
         Ok(BNO055AxisSign::from_bits_truncate(value))
     }
