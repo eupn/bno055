@@ -286,6 +286,50 @@ where
         Ok(BNO055CalibrationStatus { sys, gyr, acc, mag })
     }
 
+    pub fn is_fully_calibrated(&mut self) -> Result<bool, Error<E>> {
+        let status = self.get_calibration_status()?;
+        Ok(status.mag == 3 && status.gyr == 3 && status.acc == 3 && status.sys == 3)
+    }
+
+    pub fn calibration_profile(&mut self) -> Result<BNO055Calibration, Error<E>> {
+        let prev_mode = self.mode;
+        self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+
+        let mut buf: [u8; BNO055_CALIB_SIZE] = [0; BNO055_CALIB_SIZE];
+
+        self
+            .read_bytes(BNO055_ACC_OFFSET_X_LSB, &mut buf[..])
+            .map_err(Error::I2c)?;
+
+        let res = BNO055Calibration::from_buf(&buf);
+
+        self.set_mode(prev_mode)?;
+
+        Ok(res)
+    }
+
+    pub fn set_calibration_profile(&mut self, calib: BNO055Calibration) -> Result<(), Error<E>> {
+        let prev_mode = self.mode;
+        self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+
+        let buf_profile = calib.as_bytes();
+
+        // Combine register address and profile into single buffer
+        let buf_reg = [BNO055_ACC_OFFSET_X_LSB; 1];
+        let mut buf_with_reg = [0u8; 1 + BNO055_CALIB_SIZE];
+        for (to, from) in buf_with_reg
+            .iter_mut()
+            .zip(buf_reg.iter().chain(buf_profile.iter())) { *to = *from }
+
+        self.i2c
+            .write(BNO055_DEFAULT_ADDR, &buf_with_reg[..])
+            .map_err(Error::I2c)?;
+
+        self.set_mode(prev_mode)?;
+
+        Ok(())
+    }
+
     pub fn id(&mut self) -> Result<u8, Error<E>> {
         self.read_u8(BNO055_CHIP_ID).map_err(Error::I2c)
     }
@@ -425,6 +469,8 @@ pub const BNO055_SYS_TRIGGER_SELF_TEST_BIT: u8 = 0b000_0001; // Self-test comman
 pub const BNO055_TEMP_SOURCE: u8 = 0x40;
 pub const BNO055_AXIS_MAP_CONFIG: u8 = 0x41;
 pub const BNO055_AXIS_MAP_SIGN: u8 = 0x42;
+
+/// Calibration data
 
 pub const BNO055_ACC_OFFSET_X_LSB: u8 = 0x55;
 pub const BNO055_ACC_OFFSET_X_MSB: u8 = 0x56;
@@ -623,6 +669,54 @@ pub struct BNO055Revision {
     pub accelerometer: u8,
     pub magnetometer: u8,
     pub gyroscope: u8,
+}
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct BNO055Calibration {
+    pub acc_offset_x_lsb: u8,
+    pub acc_offset_x_msb: u8,
+    pub acc_offset_y_lsb: u8,
+    pub acc_offset_y_msb: u8,
+    pub acc_offset_z_lsb: u8,
+    pub acc_offset_z_msb: u8,
+
+    pub mag_offset_x_lsb: u8,
+    pub mag_offset_x_msb: u8,
+    pub mag_offset_y_lsb: u8,
+    pub mag_offset_y_msb: u8,
+    pub mag_offset_z_lsb: u8,
+    pub mag_offset_z_msb: u8,
+
+    pub gyr_offset_x_lsb: u8,
+    pub gyr_offset_x_msb: u8,
+    pub gyr_offset_y_lsb: u8,
+    pub gyr_offset_y_msb: u8,
+    pub gyr_offset_z_lsb: u8,
+    pub gyr_offset_z_msb: u8,
+
+    pub acc_radius_lsb: u8,
+    pub acc_radius_msb: u8,
+    pub mag_radius_lsb: u8,
+    pub mag_radius_msb: u8,
+}
+
+/// BNO055's calibration profile size.
+pub const BNO055_CALIB_SIZE: usize = core::mem::size_of::<BNO055Calibration>();
+
+impl BNO055Calibration {
+    pub fn from_buf(buf: &[u8; BNO055_CALIB_SIZE]) -> BNO055Calibration {
+        unsafe { core::ptr::read(buf.as_ptr() as *const _) }
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        unsafe {
+            core::slice::from_raw_parts(
+                (self as *const _) as *const u8,
+                ::core::mem::size_of::<BNO055Calibration>(),
+            )
+        }
+    }
 }
 
 #[derive(Debug)]

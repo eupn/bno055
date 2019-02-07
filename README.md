@@ -46,6 +46,44 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
 
 ## Setup details
 
+### Device calibration
+
+To calibrate device's sensors for first time:
+
+```rust
+use bno055::{BNO055Calibration, BNO055OperationMode, BNO055_CALIB_SIZE};
+
+let bno055 = ...;
+
+// Enter NDOF sensor fusion mode whic is also performing
+// a calibration
+bno055.set_mode(BNO055OperationMode::NDOF)?;
+
+// Wait for device to auto-calibrate
+while !bno055.is_fully_calibrated() {}
+
+let calib = bno055.calibration_profile()?;
+
+// Save calibration profile in NVRAM
+mcu.nvram_write(BNO055_CALIB_ADDR, calib.as_bytes(), BNO055_CALIB_SIZE)?;
+```
+
+To load previously saved calibration profile:
+
+```rust
+use bno055::{BNO055Calibration, BNO055OperationMode, BNO055_CALIB_SIZE};
+
+let bno055 = ...;
+
+// Read saved calibration profile from MCUs NVRAM
+let mut buf = [0u8; BNO055_CALIB_SIZE];
+mcu.nvram_read(BNO055_CALIB_ADDR, &mut buf, BNO055_CALIB_SIZE)?;
+
+// Apply calibration profile
+let calib = BNO055Calibration::from_buf(buf);
+bno055.set_calibration_profile(calib)?;
+```
+
 ### Remapping axes to correspond your mounting
 
 BNO055 allows to change default axes to meet chip orientation with
@@ -113,12 +151,13 @@ What is done and tested and what is not yet:
 - [x] External crystal selection
 - [x] Axis remap
 - [x] Axis sign setup
-- [ ] Calibration data readout
-- [ ] Calibration data setup
-- [ ] Temperature readout
+- [x] Calibration data readout
+- [x] Calibration data setup
 - [ ] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
     - [ ] Raw accelerometer data readout
     - [ ] Raw gyroscope data readout
     - [ ] Raw magnetometer data readout
+- [ ] Temperature readout
+- [ ] Interrupts
