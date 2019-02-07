@@ -50,7 +50,7 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
 
 BNO055 allows to change default axes to meet chip orientation with
 actual physical device orientation, thus providing possibility to place BNO055 
-chip on PCB as suitable for designer and to match chip's axes to and physical 
+chip on PCB as suitable for designer and to match chip's axes to physical 
 axes in software later.
 
 ```rust
