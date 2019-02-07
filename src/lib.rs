@@ -36,7 +36,7 @@ where
     D: DelayMs<u8>,
 {
     /// Side-effect-free constructor.
-    /// Nothing will be read or write before `init()` call.
+    /// Nothing will be read or written before `init()` call.
     pub fn new(i2c: I, delay: D) -> Self {
         let bno = Bno055 {
             i2c,
@@ -286,11 +286,13 @@ where
         Ok(BNO055CalibrationStatus { sys, gyr, acc, mag })
     }
 
+    /// Checks whether device is fully calibrated or not.
     pub fn is_fully_calibrated(&mut self) -> Result<bool, Error<E>> {
         let status = self.get_calibration_status()?;
         Ok(status.mag == 3 && status.gyr == 3 && status.acc == 3 && status.sys == 3)
     }
 
+    /// Reads current calibration profile of the device.
     pub fn calibration_profile(&mut self) -> Result<BNO055Calibration, Error<E>> {
         let prev_mode = self.mode;
         self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
@@ -308,6 +310,7 @@ where
         Ok(res)
     }
 
+    /// Sets current calibration profile.
     pub fn set_calibration_profile(&mut self, calib: BNO055Calibration) -> Result<(), Error<E>> {
         let prev_mode = self.mode;
         self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
