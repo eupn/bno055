@@ -404,8 +404,7 @@ where
 
     /// Sets current register map page.
     fn set_page(&mut self, page: BNO055RegisterPage) -> Result<(), Error<E>> {
-        self
-            .write_u8(BNO055_PAGE_ID, page.bits())
+        self.write_u8(BNO055_PAGE_ID, page.bits())
             .map_err(Error::I2c)?;
 
         Ok(())
