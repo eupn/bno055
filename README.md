@@ -184,9 +184,10 @@ What is done and tested and what is not yet:
 - [x] Calibration data setup
 - [x] Alternative I2C address
 - [x] Take register pages into account
-- [ ] Orientation data readout
+- [x] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
+- [ ] Raw sensor data readout
     - [ ] Raw accelerometer data readout
     - [ ] Raw gyroscope data readout
     - [ ] Raw magnetometer data readout
