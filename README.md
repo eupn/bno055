@@ -8,7 +8,7 @@
 
 ## What is this?
 
-This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) BNO055.
+This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) [BNO055](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf).
 
 It is device-agnostic and uses `Write`/`WriteRead` (I2C) and `Delay` embedded-hal traits for its operation.
 
