@@ -64,6 +64,8 @@ where
     /// - Sets BNO055's power mode to NORMAL
     /// - Clears SYS_TRIGGER register
     pub fn init(&mut self) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let id = self.id()?;
         if id != BNO055_ID {
             return Err(Error::InvalidChipId(id));
@@ -81,6 +83,8 @@ where
     /// Resets the BNO055, initializing the register map to default values.
     /// More in section 3.2.
     pub fn soft_reset(&mut self) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         self.write_u8(BNO055_SYS_TRIGGER, BNO055_SYS_TRIGGER_RST_SYS_BIT)
             .map_err(Error::I2c)
     }
@@ -89,6 +93,8 @@ where
     /// See section 3.3.
     pub fn set_mode(&mut self, mode: BNO055OperationMode) -> Result<(), Error<E>> {
         if self.mode != mode {
+            self.set_page(BNO055RegisterPage::PAGE_0)?;
+
             self.mode = mode;
 
             self.write_u8(BNO055_OPR_MODE, mode.bits())
@@ -101,18 +107,11 @@ where
         Ok(())
     }
 
-    /// Sets the register page.
-    /// See section 4.2.
-    pub fn set_page(&mut self, page: BNO055RegisterPage) -> Result<(), Error<E>> {
-        self.write_u8(BNO055_PAGE_ID, page as u8)
-            .map_err(Error::I2c)?;
-
-        Ok(())
-    }
-
     /// Sets the power mode, see [BNO055PowerMode](enum.BNO055PowerMode.html)
     /// See section 3.2
     pub fn set_power_mode(&mut self, mode: BNO055PowerMode) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         self.write_u8(BNO055_PWR_MODE, mode.bits())
             .map_err(Error::I2c)?;
 
@@ -121,6 +120,8 @@ where
 
     /// Returns BNO055's power mode.
     pub fn power_mode(&mut self) -> Result<BNO055PowerMode, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let mode = self.read_u8(BNO055_PWR_MODE).map_err(Error::I2c)?;
 
         Ok(BNO055PowerMode::from_bits_truncate(mode))
@@ -128,6 +129,8 @@ where
 
     /// Enables/Disables usage of external 32k crystal.
     pub fn set_external_crystal(&mut self, ext: bool) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let prev = self.mode;
         self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
         self.write_u8(BNO055_SYS_TRIGGER, if ext { 0x80 } else { 0x00 })
@@ -140,6 +143,8 @@ where
 
     /// Configures axis remap of the device.
     pub fn set_axis_remap(&mut self, remap: AxisRemap) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let remap_value = ((remap.x.bits() & 0b11) << 0)
             | ((remap.y.bits() & 0b11) << 2)
             | ((remap.z.bits() & 0b11) << 4);
@@ -152,6 +157,8 @@ where
 
     /// Returns axis remap of the device.
     pub fn axis_remap(&mut self) -> Result<AxisRemap, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let value = self.read_u8(BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
 
         let remap = AxisRemap {
@@ -165,6 +172,8 @@ where
 
     /// Configures device's axes sign: positive or negative.
     pub fn set_axis_sign(&mut self, sign: BNO055AxisSign) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         self.write_u8(BNO055_AXIS_MAP_SIGN, sign.bits())
             .map_err(Error::I2c)?;
 
@@ -173,6 +182,8 @@ where
 
     /// Return device's axes sign.
     pub fn axis_sign(&mut self) -> Result<BNO055AxisSign, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let value = self.read_u8(BNO055_AXIS_MAP_SIGN).map_err(Error::I2c)?;
 
         Ok(BNO055AxisSign::from_bits_truncate(value))
@@ -181,6 +192,8 @@ where
     /// Gets the revision of software, bootloader, accelerometer, magnetometer, and gyroscope of
     /// the BNO055 device.
     pub fn get_revision(&mut self) -> Result<BNO055Revision, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let mut buf: [u8; 6] = [0; 6];
 
         self.read_bytes(BNO055_ACC_ID, &mut buf)
@@ -197,6 +210,8 @@ where
 
     /// Returns device's system status.
     pub fn get_system_status(&mut self, do_selftest: bool) -> Result<BNO055SystemStatus, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let selftest = if do_selftest {
             let prev = self.mode;
             self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
@@ -233,6 +248,8 @@ where
     /// Gets a quaternion (`nalgebra::Quaternion<f32>`) reading from the BNO055.
     /// Must be in a sensor fusion (IMU) operating mode.
     pub fn quaternion(&mut self) -> Result<Quaternion<f32>, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         // Device should be in fusion (IMU) mode to be able to produce quaternions
         if self.is_in_fusion_mode()? {
             let mut buf: [u8; 8] = [0; 8];
@@ -262,6 +279,8 @@ where
     /// Get Euler angles representation of heading in degrees.
     /// Euler angles is represented as (`roll`, `pitch`, `yaw/heading`).
     pub fn euler_angles(&mut self) -> Result<Rotation3<f32>, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         // Device should be in fusion mode to be able to produce quaternions
         if self.is_in_fusion_mode()? {
             let mut buf: [u8; 6] = [0; 6];
@@ -285,6 +304,8 @@ where
 
     /// Get calibration status
     pub fn get_calibration_status(&mut self) -> Result<BNO055CalibrationStatus, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let status = self.read_u8(BNO055_CALIB_STAT).map_err(Error::I2c)?;
 
         let sys = (status >> 6) & 0b11;
@@ -303,6 +324,8 @@ where
 
     /// Reads current calibration profile of the device.
     pub fn calibration_profile(&mut self) -> Result<BNO055Calibration, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let prev_mode = self.mode;
         self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
 
@@ -320,6 +343,8 @@ where
 
     /// Sets current calibration profile.
     pub fn set_calibration_profile(&mut self, calib: BNO055Calibration) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let prev_mode = self.mode;
         self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
 
@@ -347,11 +372,14 @@ where
     /// Returns device's factory-programmed and constant chip ID.
     /// This ID is device model ID and not a BNO055's unique ID, whic is stored in different register.
     pub fn id(&mut self) -> Result<u8, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
         self.read_u8(BNO055_CHIP_ID).map_err(Error::I2c)
     }
 
     /// Returns device's operation mode.
     pub fn get_mode(&mut self) -> Result<BNO055OperationMode, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
         let mode = self.read_u8(BNO055_OPR_MODE).map_err(Error::I2c)?;
         let mode = BNO055OperationMode::from_bits_truncate(mode);
         self.mode = mode;
@@ -372,6 +400,15 @@ where
         };
 
         Ok(is_in_fusion)
+    }
+
+    /// Sets current register map page.
+    fn set_page(&mut self, page: BNO055RegisterPage) -> Result<(), Error<E>> {
+        self
+            .write_u8(BNO055_PAGE_ID, page.bits())
+            .map_err(Error::I2c)?;
+
+        Ok(())
     }
 
     #[inline(always)]
@@ -752,11 +789,12 @@ pub struct BNO055CalibrationStatus {
     pub mag: u8,
 }
 
-#[derive(Copy, Clone, PartialEq)]
-#[repr(u8)]
-pub enum BNO055RegisterPage {
-    Page0 = 0,
-    Page1 = 1,
+bitflags! {
+    /// Possible BNO055 register map pages.
+    pub struct BNO055RegisterPage: u8 {
+        const PAGE_0 = 0;
+        const PAGE_1 = 1;
+    }
 }
 
 bitflags! {

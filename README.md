@@ -169,7 +169,7 @@ What is done and tested and what is not yet:
 - [x] Calibration data readout
 - [x] Calibration data setup
 - [x] Alternative I2C address
-- [ ] Take register pages into account
+- [x] Take register pages into account
 - [ ] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
