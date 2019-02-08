@@ -344,6 +344,8 @@ where
         Ok(())
     }
 
+    /// Returns device's factory-programmed and constant chip ID.
+    /// This ID is device model ID and not a BNO055's unique ID, whic is stored in different register.
     pub fn id(&mut self) -> Result<u8, Error<E>> {
         self.read_u8(BNO055_CHIP_ID).map_err(Error::I2c)
     }
