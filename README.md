@@ -142,12 +142,16 @@ bno055
 
 ### Using alternative I2C address
 
-BNO055 allows to change its I2C address from default `0x28` to alternative `0x29` by setting
-`COM3` pin `HIGH`.
+BNO055 allows to change its I2C address from default `0x29` to alternative `0x28` by setting
+`COM3` pin `LOW`.
 
 To connect to device with alternative address, enable its use by calling `with_alternative_address()`:
 
 ```rust
+// use default 0x29 address
+let mut bno = bno055::Bno055::new(i2c, delay);
+
+// use 0x28 address
 let mut bno = bno055::Bno055::new(i2c, delay).with_alternative_address();
 ```
 

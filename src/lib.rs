@@ -28,7 +28,7 @@ pub struct Bno055<I, D> {
     i2c: I,
     delay: D,
     pub mode: BNO055OperationMode,
-    use_alternative_addr: bool,
+    use_default_addr: bool,
 }
 
 impl<I, D, E> Bno055<I, D>
@@ -43,7 +43,7 @@ where
             i2c,
             delay,
             mode: BNO055OperationMode::CONFIG_MODE,
-            use_alternative_addr: false,
+            use_default_addr: true,
         };
 
         bno
@@ -51,7 +51,7 @@ where
 
     /// Enables use of alternative I2C address `BNO055_ALTERNATE_ADDR`.
     pub fn with_alternative_address(mut self) -> Self {
-        self.use_alternative_addr = true;
+        self.use_default_addr = false;
 
         self
     }
@@ -374,7 +374,7 @@ where
 
     #[inline(always)]
     fn i2c_addr(&self) -> u8 {
-        if self.use_alternative_addr {
+        if !self.use_default_addr {
             BNO055_ALTERNATE_ADDR
         } else {
             BNO055_DEFAULT_ADDR
@@ -403,8 +403,8 @@ where
 
 // --- Regs definition ---
 
-pub const BNO055_DEFAULT_ADDR: u8 = 0x28;
-pub const BNO055_ALTERNATE_ADDR: u8 = 0x29;
+pub const BNO055_DEFAULT_ADDR: u8 = 0x29;
+pub const BNO055_ALTERNATE_ADDR: u8 = 0x28;
 pub const BNO055_ID: u8 = 0xA0;
 
 pub const BNO055_PAGE_ID: u8 = 0x07;
