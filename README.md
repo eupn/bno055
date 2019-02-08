@@ -155,6 +155,20 @@ let mut bno = bno055::Bno055::new(i2c, delay);
 let mut bno = bno055::Bno055::new(i2c, delay).with_alternative_address();
 ```
 
+### Change BNO055 power mode
+
+```rust
+use bno055::{Bno055, BNO055PowerMode};
+// Normal mode
+bno055.set_power_mode(BNO055PowerMode::NORMAL)?;
+
+// Low-power mode (only accelerometer being awake)
+bno055.set_power_mode(BNO055PowerMode::LOW_POWER)?;
+
+// Suspend mode (all sensors and controller are sleeping)
+bno055.set_power_mode(BNO055PowerMode::SUSPEND)?;
+```
+
 ## Status
 
 What is done and tested and what is not yet:
