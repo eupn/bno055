@@ -187,11 +187,12 @@ What is done and tested and what is not yet:
 - [x] Orientation data readout
     - [x] Quaternions
     - [x] Euler angles
-- [ ] Raw sensor data readout
+- [x] Raw sensor data readout
     - [x] Raw accelerometer data readout
     - [x] Raw gyroscope data readout
     - [x] Raw magnetometer data readout
 - [x] Linear acceleration data readout
 - [x] Gravity vector data readout
+- [ ] Per-sensor configuration (when not in fusion mode)
 - [ ] Temperature readout
 - [ ] Interrupts
