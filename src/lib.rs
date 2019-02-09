@@ -9,7 +9,7 @@ use embedded_hal::{
 
 use bitflags::bitflags;
 use byteorder::{ByteOrder, LittleEndian};
-pub use nalgebra::{Quaternion, Rotation3};
+pub use nalgebra::{Quaternion, Rotation3, Vector3};
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -408,6 +408,43 @@ where
             .map_err(Error::I2c)?;
 
         Ok(())
+    }
+
+    /// Reads vector of sensor data from the device.
+    fn read_vec(&mut self, reg: u8, scaling: f32) -> Result<Vector3<f32>, Error<E>> {
+        let mut buf: [u8; 6] = [0; 6];
+
+        self.read_bytes(reg, &mut buf).map_err(Error::I2c)?;
+
+        let x = LittleEndian::read_i16(&buf[0..2]) as f32;
+        let y = LittleEndian::read_i16(&buf[2..4]) as f32;
+        let z = LittleEndian::read_i16(&buf[4..6]) as f32;
+
+        Ok(Vector3::new(x * scaling, y * scaling, z * scaling))
+    }
+
+    /// Returns linear acceleration vector in m/s^2 units.
+    /// Available only in sensor fusion modes.
+    pub fn linear_acceleration(&mut self) -> Result<Vector3<f32>, ()> {
+        if self.is_in_fusion_mode() {
+            self.set_page(BNO055RegisterPage::PAGE_0);
+            let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
+            self.read_vec(BNO055_LIA_DATA_X_LSB, 0.01f32)?
+        } else {
+            Err(Error::InvalidMode)
+        }
+    }
+
+    /// Returns gravity vector in m/s^2 units.
+    /// Available only in sensor fusion modes.
+    pub fn gravity(&mut self) -> Result<Vector3<f32>, ()> {
+        if self.is_in_fusion_mode() {
+            self.set_page(BNO055RegisterPage::PAGE_0);
+            let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
+            self.read_vec(BNO055_GRV_DATA_X_LSB, 0.01f32)?
+        } else {
+            Err(Error::InvalidMode)
+        }
     }
 
     #[inline(always)]
