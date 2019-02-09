@@ -39,12 +39,12 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
 
 3. Read orientation data: quaternion or euler angles (roll, pitch, yaw/heading)
     ```rust
-    let quat = imu.quaternion()?;
+    let quat: nalgebra::Quaternion<f32> = imu.quaternion()?;
     // or:
-    let euler = imu.euler_angles()?;
+    let euler: nalgebra::Rotation3<f32> = imu.euler_angles()?;
     ```
 
-## Setup details
+## Details and examples
 
 ### Device calibration
 
