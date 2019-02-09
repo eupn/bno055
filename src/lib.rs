@@ -429,7 +429,7 @@ where
         if self.is_in_fusion_mode()? {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-            self.read_vec(BNO055_LIA_DATA_X_LSB, 0.01f32)
+            self.read_vec(BNO055_LIA_DATA_X_LSB, scaling)
         } else {
             Err(Error::InvalidMode)
         }
@@ -441,9 +441,26 @@ where
         if self.is_in_fusion_mode()? {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-            self.read_vec(BNO055_GRV_DATA_X_LSB, 0.01f32)
+            self.read_vec(BNO055_GRV_DATA_X_LSB, scaling)
         } else {
             Err(Error::InvalidMode)
+        }
+    }
+
+    /// Returns current accelerometer data in m/s^2 units.
+    /// Available only in modes when accelerometer is enabled.
+    pub fn acceleration(&mut self) -> Result<Vector3<f32>, Error<E>> {
+        match self.mode {
+            |   BNO055OperationMode::ACC_ONLY
+            |   BNO055OperationMode::ACC_GYRO
+            |   BNO055OperationMode::ACC_MAG
+            |   BNO055OperationMode::AMG => {
+                self.set_page(BNO055RegisterPage::PAGE_0)?;
+                let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
+                self.read_vec(BNO055_ACC_DATA_X_LSB, scaling)
+            }
+
+            _ => return Err(Error::InvalidMode)
         }
     }
 

@@ -188,7 +188,7 @@ What is done and tested and what is not yet:
     - [x] Quaternions
     - [x] Euler angles
 - [ ] Raw sensor data readout
-    - [ ] Raw accelerometer data readout
+    - [x] Raw accelerometer data readout
     - [ ] Raw gyroscope data readout
     - [ ] Raw magnetometer data readout
 - [x] Linear acceleration data readout
