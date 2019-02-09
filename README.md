@@ -189,8 +189,8 @@ What is done and tested and what is not yet:
     - [x] Euler angles
 - [ ] Raw sensor data readout
     - [x] Raw accelerometer data readout
-    - [ ] Raw gyroscope data readout
-    - [ ] Raw magnetometer data readout
+    - [x] Raw gyroscope data readout
+    - [x] Raw magnetometer data readout
 - [x] Linear acceleration data readout
 - [x] Gravity vector data readout
 - [ ] Temperature readout

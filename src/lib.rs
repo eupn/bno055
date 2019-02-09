@@ -448,8 +448,8 @@ where
     }
 
     /// Returns current accelerometer data in m/s^2 units.
-    /// Available only in modes when accelerometer is enabled.
-    pub fn acceleration(&mut self) -> Result<Vector3<f32>, Error<E>> {
+    /// Available only in modes in which accelerometer is enabled.
+    pub fn accel_data(&mut self) -> Result<Vector3<f32>, Error<E>> {
         match self.mode {
             |   BNO055OperationMode::ACC_ONLY
             |   BNO055OperationMode::ACC_GYRO
@@ -458,6 +458,40 @@ where
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
                 self.read_vec(BNO055_ACC_DATA_X_LSB, scaling)
+            }
+
+            _ => return Err(Error::InvalidMode)
+        }
+    }
+
+    /// Returns current gyroscope data in deg/s units.
+    /// Available only in modes in which gyroscope is enabled.
+    pub fn gyro_data(&mut self) -> Result<Vector3<f32>, Error<E>> {
+        match self.mode {
+            |   BNO055OperationMode::GYRO_ONLY
+            |   BNO055OperationMode::ACC_GYRO
+            |   BNO055OperationMode::MAG_GYRO
+            |   BNO055OperationMode::AMG => {
+                self.set_page(BNO055RegisterPage::PAGE_0)?;
+                let scaling = 1f32 / 16f32; // 1 deg/s = 16 lsb
+                self.read_vec(BNO055_GYR_DATA_X_LSB, scaling)
+            }
+
+            _ => return Err(Error::InvalidMode)
+        }
+    }
+
+    /// Returns current magnetometer data in uT units.
+    /// Available only in modes in which magnetometer is enabled.
+    pub fn mag_data(&mut self) -> Result<Vector3<f32>, Error<E>> {
+        match self.mode {
+            |   BNO055OperationMode::MAG_ONLY
+            |   BNO055OperationMode::ACC_MAG
+            |   BNO055OperationMode::MAG_GYRO
+            |   BNO055OperationMode::AMG => {
+                self.set_page(BNO055RegisterPage::PAGE_0)?;
+                let scaling = 1f32 / 16f32; // 1 uT = 16 lsb
+                self.read_vec(BNO055_MAG_DATA_X_LSB, scaling)
             }
 
             _ => return Err(Error::InvalidMode)
@@ -865,7 +899,7 @@ bitflags! {
         const CONFIG_MODE = 0b0000;
         const ACC_ONLY = 0b0001;
         const MAG_ONLY = 0b0010;
-        const GYRO_ONLU = 0b0011;
+        const GYRO_ONLY = 0b0011;
         const ACC_MAG = 0b0100;
         const ACC_GYRO = 0b0101;
         const MAG_GYRO = 0b0110;
