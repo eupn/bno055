@@ -425,11 +425,11 @@ where
 
     /// Returns linear acceleration vector in m/s^2 units.
     /// Available only in sensor fusion modes.
-    pub fn linear_acceleration(&mut self) -> Result<Vector3<f32>, ()> {
-        if self.is_in_fusion_mode() {
-            self.set_page(BNO055RegisterPage::PAGE_0);
+    pub fn linear_acceleration(&mut self) -> Result<Vector3<f32>, Error<E>> {
+        if self.is_in_fusion_mode()? {
+            self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-            self.read_vec(BNO055_LIA_DATA_X_LSB, 0.01f32)?
+            self.read_vec(BNO055_LIA_DATA_X_LSB, 0.01f32)
         } else {
             Err(Error::InvalidMode)
         }
@@ -437,11 +437,11 @@ where
 
     /// Returns gravity vector in m/s^2 units.
     /// Available only in sensor fusion modes.
-    pub fn gravity(&mut self) -> Result<Vector3<f32>, ()> {
-        if self.is_in_fusion_mode() {
-            self.set_page(BNO055RegisterPage::PAGE_0);
+    pub fn gravity(&mut self) -> Result<Vector3<f32>, Error<E>> {
+        if self.is_in_fusion_mode()? {
+            self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-            self.read_vec(BNO055_GRV_DATA_X_LSB, 0.01f32)?
+            self.read_vec(BNO055_GRV_DATA_X_LSB, 0.01f32)
         } else {
             Err(Error::InvalidMode)
         }
