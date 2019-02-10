@@ -768,9 +768,9 @@ impl AxisRemapBuilder {
 
 bitflags! {
     pub struct BNO055AxisSign: u8 {
-        const X_NEGATIVE = 0b001;
+        const X_NEGATIVE = 0b100;
         const Y_NEGATIVE = 0b010;
-        const Z_NEGATIVE = 0b100;
+        const Z_NEGATIVE = 0b001;
     }
 }
 
