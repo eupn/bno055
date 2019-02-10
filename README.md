@@ -178,6 +178,14 @@ bno055.set_power_mode(BNO055PowerMode::LOW_POWER)?;
 bno055.set_power_mode(BNO055PowerMode::SUSPEND)?;
 ```
 
+### Read chip temperature
+
+Temperature is specified in degrees Celsius by default.
+
+```rust
+let temp: i8 = bno055.temperature()?;
+```
+
 ## Status
 
 What is done and tested and what is not yet:
@@ -203,5 +211,6 @@ What is done and tested and what is not yet:
 - [x] Linear acceleration data readout
 - [x] Gravity vector data readout
 - [ ] Per-sensor configuration (when not in fusion mode)
-- [ ] Temperature readout
+- [x] Temperature readout
+- [ ] Unit selection
 - [ ] Interrupts

@@ -498,6 +498,15 @@ where
         }
     }
 
+    /// Returns current temperature of the chip (in degrees Celsius).
+    pub fn temperature(&mut self) -> Result<i8, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_0)?;
+
+        // Read temperature signed byte
+        let temp = self.read_u8(BNO055_TEMP).map_err(Error::I2c)? as i8;
+        Ok(temp)
+    }
+
     #[inline(always)]
     fn i2c_addr(&self) -> u8 {
         if !self.use_default_addr {
