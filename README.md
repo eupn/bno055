@@ -1,18 +1,22 @@
 ## Bosch Sensortec BNO055 embedded-hal driver
 
-![](https://img.shields.io/travis/eupn/bno055.svg?style=flat)
-![](https://img.shields.io/crates/v/bno055.svg?style=flat)
-![](https://img.shields.io/crates/d/bno055.svg?maxAge=3600)
+[![](https://img.shields.io/travis/eupn/bno055.svg?style=flat)](https://travis-ci.org/eupn/bno055)
+[![](https://img.shields.io/crates/v/bno055.svg?style=flat)](https://crates.io/crates/bno055)
+[![](https://img.shields.io/crates/d/bno055.svg?maxAge=3600)](https://crates.io/crates/bno055)
 
 ![](bno055.jpg)
 
 ## What is this?
 
-This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver for Bosch's inertial measurement unit (IMU) [BNO055](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf).
+This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver 
+for Bosch's Absolute Orientation Sensor [BNO055](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf).
 
-It is device-agnostic and uses `Write`/`WriteRead` (I2C) and `Delay` embedded-hal traits for its operation.
+It is device-agnostic and uses embedded-hal's `Write`/`WriteRead` (for I2C) 
+and `Delay` traits for its operation.
 
-Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://toxiclibs.org/docs/core/toxi/geom/Quaternion.html) for quaternion reading and [Rotation3](https://www.nalgebra.org/rustdoc/nalgebra/geometry/type.Rotation3.html) for Euler angles.
+Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s
+[Quaternion](http://toxiclibs.org/docs/core/toxi/geom/Quaternion.html) for quaternion reading
+and [Rotation3](https://www.nalgebra.org/rustdoc/nalgebra/geometry/type.Rotation3.html) for Euler angles.
 
 ## Usage
 
@@ -23,6 +27,7 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
     ```
     
 2. Instantiate and init the device:
+
     ```rust
     // ... declare and configure your I2c and Delay implementations ...
     
@@ -37,12 +42,16 @@ Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s [Quaternion](http://
     Ok(imu)
     ```
 
-3. Read orientation data: quaternion or euler angles (roll, pitch, yaw/heading)
+3. Read orientation data, quaternion or euler angles (roll, pitch, yaw/heading):
+
     ```rust
     let quat: nalgebra::Quaternion<f32> = imu.quaternion()?;
     // or:
     let euler: nalgebra::Rotation3<f32> = imu.euler_angles()?;
     ```
+
+    >Due to the BNO055 firmware bugs, the Euler angles reading shouldn't be relied on. 
+    I recommend to stick with quaternion readings and convert it to the Euler angles later and if needed.
 
 ## Details and examples
 
@@ -55,8 +64,8 @@ use bno055::{BNO055Calibration, BNO055OperationMode, BNO055_CALIB_SIZE};
 
 let bno055 = ...;
 
-// Enter NDOF sensor fusion mode whic is also performing
-// a calibration
+// Enter NDOF (ansolute orientation) sensor fusion mode which is also performing
+// a regular sensors calibration
 bno055.set_mode(BNO055OperationMode::NDOF)?;
 
 // Wait for device to auto-calibrate
