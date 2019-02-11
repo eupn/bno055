@@ -68,7 +68,9 @@ let bno055 = ...;
 // a regular sensors calibration
 bno055.set_mode(BNO055OperationMode::NDOF)?;
 
-// Wait for device to auto-calibrate
+// Wait for device to auto-calibrate.
+// Please perform steps necessary for auto-calibration to kick in.
+// Required steps are described in Datasheet section 3.11
 while !bno055.is_fully_calibrated() {}
 
 let calib = bno055.calibration_profile()?;
