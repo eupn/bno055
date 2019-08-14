@@ -24,24 +24,21 @@ pub enum Error<E> {
     InvalidMode,
 }
 
-pub struct Bno055<I, D> {
+pub struct Bno055<I> {
     i2c: I,
-    delay: D,
     pub mode: BNO055OperationMode,
     use_default_addr: bool,
 }
 
-impl<I, D, E> Bno055<I, D>
+impl<I, E> Bno055<I>
 where
     I: WriteRead<Error = E> + Write<Error = E>,
-    D: DelayMs<u8>,
 {
     /// Side-effect-free constructor.
     /// Nothing will be read or written before `init()` call.
-    pub fn new(i2c: I, delay: D) -> Self {
+    pub fn new(i2c: I) -> Self {
         let bno = Bno055 {
             i2c,
-            delay,
             mode: BNO055OperationMode::CONFIG_MODE,
             use_default_addr: true,
         };
@@ -63,7 +60,7 @@ where
     /// - Sets BNO055 to CONFIG mode
     /// - Sets BNO055's power mode to NORMAL
     /// - Clears SYS_TRIGGER register
-    pub fn init(&mut self) -> Result<(), Error<E>> {
+    pub fn init(&mut self, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let id = self.id()?;
@@ -72,7 +69,7 @@ where
         }
 
         self.soft_reset()?;
-        self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+        self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
         self.set_power_mode(BNO055PowerMode::NORMAL)?;
         self.write_u8(BNO055_SYS_TRIGGER, 0x00)
             .map_err(Error::I2c)?;
@@ -91,7 +88,7 @@ where
 
     /// Sets the operating mode, see [BNO055OperationMode](enum.BNO055OperationMode.html).
     /// See section 3.3.
-    pub fn set_mode(&mut self, mode: BNO055OperationMode) -> Result<(), Error<E>> {
+    pub fn set_mode(&mut self, mode: BNO055OperationMode, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
         if self.mode != mode {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -101,7 +98,7 @@ where
                 .map_err(Error::I2c)?;
 
             // Table 3-6 says 19ms to switch to CONFIG_MODE
-            self.delay.delay_ms(19);
+            delay.delay_ms(19);
         }
 
         Ok(())
@@ -128,15 +125,15 @@ where
     }
 
     /// Enables/Disables usage of external 32k crystal.
-    pub fn set_external_crystal(&mut self, ext: bool) -> Result<(), Error<E>> {
+    pub fn set_external_crystal(&mut self, ext: bool, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let prev = self.mode;
-        self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+        self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
         self.write_u8(BNO055_SYS_TRIGGER, if ext { 0x80 } else { 0x00 })
             .map_err(Error::I2c)?;
 
-        self.set_mode(prev)?;
+        self.set_mode(prev, delay)?;
 
         Ok(())
     }
@@ -209,12 +206,12 @@ where
     }
 
     /// Returns device's system status.
-    pub fn get_system_status(&mut self, do_selftest: bool) -> Result<BNO055SystemStatus, Error<E>> {
+    pub fn get_system_status(&mut self, do_selftest: bool, delay: &mut dyn DelayMs<u8>) -> Result<BNO055SystemStatus, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let selftest = if do_selftest {
             let prev = self.mode;
-            self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+            self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
 
             let sys_trigger = self.read_u8(BNO055_SYS_TRIGGER).map_err(Error::I2c)?;
 
@@ -223,12 +220,12 @@ where
 
             // Wait for self-test result
             for _ in 0..4 {
-                self.delay.delay_ms(255);
+                delay.delay_ms(255);
             }
 
             let result = self.read_u8(BNO055_ST_RESULT).map_err(Error::I2c)?;
 
-            self.set_mode(prev)?; // Restore previous mode
+            self.set_mode(prev, delay)?; // Restore previous mode
 
             Some(BNO055SelfTestStatus::from_bits_truncate(result))
         } else {
@@ -323,11 +320,11 @@ where
     }
 
     /// Reads current calibration profile of the device.
-    pub fn calibration_profile(&mut self) -> Result<BNO055Calibration, Error<E>> {
+    pub fn calibration_profile(&mut self, delay: &mut dyn DelayMs<u8>) -> Result<BNO055Calibration, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let prev_mode = self.mode;
-        self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+        self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
 
         let mut buf: [u8; BNO055_CALIB_SIZE] = [0; BNO055_CALIB_SIZE];
 
@@ -336,17 +333,17 @@ where
 
         let res = BNO055Calibration::from_buf(&buf);
 
-        self.set_mode(prev_mode)?;
+        self.set_mode(prev_mode, delay)?;
 
         Ok(res)
     }
 
     /// Sets current calibration profile.
-    pub fn set_calibration_profile(&mut self, calib: BNO055Calibration) -> Result<(), Error<E>> {
+    pub fn set_calibration_profile(&mut self, calib: BNO055Calibration, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let prev_mode = self.mode;
-        self.set_mode(BNO055OperationMode::CONFIG_MODE)?;
+        self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
 
         let buf_profile = calib.as_bytes();
 
@@ -364,7 +361,7 @@ where
             .write(self.i2c_addr(), &buf_with_reg[..])
             .map_err(Error::I2c)?;
 
-        self.set_mode(prev_mode)?;
+        self.set_mode(prev_mode, delay)?;
 
         Ok(())
     }
