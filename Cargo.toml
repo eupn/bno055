@@ -19,7 +19,7 @@ readme = "README.md"
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
-nalgebra = { version = "0.17.0", default-features = false }
+mint = "0.5"
 bitflags = "1"
 
 [dependencies.embedded-hal]

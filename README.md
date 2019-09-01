@@ -14,9 +14,10 @@ for Bosch's Absolute Orientation Sensor [BNO055](https://ae-bst.resource.bosch.c
 It is device-agnostic and uses embedded-hal's `Write`/`WriteRead` (for I2C) 
 and `Delay` traits for its operation.
 
-Uses and re-exports [nalgebra](https://www.nalgebra.org/)'s
-[Quaternion](http://toxiclibs.org/docs/core/toxi/geom/Quaternion.html) for quaternion reading
-and [Rotation3](https://www.nalgebra.org/rustdoc/nalgebra/geometry/type.Rotation3.html) for Euler angles.
+Uses and re-exports [mint](https://crates.io/crates/mint)'s
+[Quaternion](https://docs.rs/mint/0.5.1/mint/struct.Quaternion.html) for quaternion reading
+and [EulerAngles](https://docs.rs/mint/0.5.1/mint/struct.EulerAngles.html) for Euler angles
+and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor readings.
 
 ## Usage
 
@@ -45,9 +46,9 @@ and [Rotation3](https://www.nalgebra.org/rustdoc/nalgebra/geometry/type.Rotation
 3. Read orientation data, quaternion or euler angles (roll, pitch, yaw/heading):
 
     ```rust
-    let quat: nalgebra::Quaternion<f32> = imu.quaternion()?;
+    let quat: mint::Quaternion<f32> = imu.quaternion()?;
     // or:
-    let euler: nalgebra::Rotation3<f32> = imu.euler_angles()?;
+    let euler: mint::EulerAngles<f32, ()> = imu.euler_angles()?;
     ```
 
     >Due to the BNO055 firmware bugs, the Euler angles reading shouldn't be relied on. 

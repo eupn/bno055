@@ -9,7 +9,7 @@ use embedded_hal::{
 
 use bitflags::bitflags;
 use byteorder::{ByteOrder, LittleEndian};
-pub use nalgebra::{Quaternion, Rotation3, Vector3};
+pub use mint;
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -88,7 +88,11 @@ where
 
     /// Sets the operating mode, see [BNO055OperationMode](enum.BNO055OperationMode.html).
     /// See section 3.3.
-    pub fn set_mode(&mut self, mode: BNO055OperationMode, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
+    pub fn set_mode(
+        &mut self,
+        mode: BNO055OperationMode,
+        delay: &mut dyn DelayMs<u8>,
+    ) -> Result<(), Error<E>> {
         if self.mode != mode {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -125,7 +129,11 @@ where
     }
 
     /// Enables/Disables usage of external 32k crystal.
-    pub fn set_external_crystal(&mut self, ext: bool, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
+    pub fn set_external_crystal(
+        &mut self,
+        ext: bool,
+        delay: &mut dyn DelayMs<u8>,
+    ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let prev = self.mode;
@@ -206,7 +214,11 @@ where
     }
 
     /// Returns device's system status.
-    pub fn get_system_status(&mut self, do_selftest: bool, delay: &mut dyn DelayMs<u8>) -> Result<BNO055SystemStatus, Error<E>> {
+    pub fn get_system_status(
+        &mut self,
+        do_selftest: bool,
+        delay: &mut dyn DelayMs<u8>,
+    ) -> Result<BNO055SystemStatus, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let selftest = if do_selftest {
@@ -242,9 +254,9 @@ where
         })
     }
 
-    /// Gets a quaternion (`nalgebra::Quaternion<f32>`) reading from the BNO055.
+    /// Gets a quaternion (`mint::Quaternion<f32>`) reading from the BNO055.
     /// Must be in a sensor fusion (IMU) operating mode.
-    pub fn quaternion(&mut self) -> Result<Quaternion<f32>, Error<E>> {
+    pub fn quaternion(&mut self) -> Result<mint::Quaternion<f32>, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         // Device should be in fusion (IMU) mode to be able to produce quaternions
@@ -260,12 +272,12 @@ where
 
             let scale = 1.0 / ((1 << 14) as f32);
 
-            let quat = Quaternion::new(
+            let quat = mint::Quaternion::from([
                 w as f32 * scale,
                 x as f32 * scale,
                 y as f32 * scale,
                 z as f32 * scale,
-            );
+            ]);
 
             Ok(quat)
         } else {
@@ -275,7 +287,7 @@ where
 
     /// Get Euler angles representation of heading in degrees.
     /// Euler angles is represented as (`roll`, `pitch`, `yaw/heading`).
-    pub fn euler_angles(&mut self) -> Result<Rotation3<f32>, Error<E>> {
+    pub fn euler_angles(&mut self) -> Result<mint::EulerAngles<f32, ()>, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         // Device should be in fusion mode to be able to produce quaternions
@@ -291,7 +303,7 @@ where
 
             let scale = 1f32 / 16f32; // 1 degree = 16 LSB
 
-            let rot = Rotation3::from_euler_angles(roll * scale, pitch * scale, heading * scale);
+            let rot = mint::EulerAngles::from([roll * scale, pitch * scale, heading * scale]);
 
             Ok(rot)
         } else {
@@ -320,7 +332,10 @@ where
     }
 
     /// Reads current calibration profile of the device.
-    pub fn calibration_profile(&mut self, delay: &mut dyn DelayMs<u8>) -> Result<BNO055Calibration, Error<E>> {
+    pub fn calibration_profile(
+        &mut self,
+        delay: &mut dyn DelayMs<u8>,
+    ) -> Result<BNO055Calibration, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let prev_mode = self.mode;
@@ -339,7 +354,11 @@ where
     }
 
     /// Sets current calibration profile.
-    pub fn set_calibration_profile(&mut self, calib: BNO055Calibration, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
+    pub fn set_calibration_profile(
+        &mut self,
+        calib: BNO055Calibration,
+        delay: &mut dyn DelayMs<u8>,
+    ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let prev_mode = self.mode;
@@ -408,7 +427,7 @@ where
     }
 
     /// Reads vector of sensor data from the device.
-    fn read_vec(&mut self, reg: u8, scaling: f32) -> Result<Vector3<f32>, Error<E>> {
+    fn read_vec(&mut self, reg: u8, scaling: f32) -> Result<mint::Vector3<f32>, Error<E>> {
         let mut buf: [u8; 6] = [0; 6];
 
         self.read_bytes(reg, &mut buf).map_err(Error::I2c)?;
@@ -417,12 +436,12 @@ where
         let y = LittleEndian::read_i16(&buf[2..4]) as f32;
         let z = LittleEndian::read_i16(&buf[4..6]) as f32;
 
-        Ok(Vector3::new(x * scaling, y * scaling, z * scaling))
+        Ok(mint::Vector3::from([x * scaling, y * scaling, z * scaling]))
     }
 
     /// Returns linear acceleration vector in m/s^2 units.
     /// Available only in sensor fusion modes.
-    pub fn linear_acceleration(&mut self) -> Result<Vector3<f32>, Error<E>> {
+    pub fn linear_acceleration(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
         if self.is_in_fusion_mode()? {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
@@ -434,7 +453,7 @@ where
 
     /// Returns gravity vector in m/s^2 units.
     /// Available only in sensor fusion modes.
-    pub fn gravity(&mut self) -> Result<Vector3<f32>, Error<E>> {
+    pub fn gravity(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
         if self.is_in_fusion_mode()? {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
@@ -446,52 +465,52 @@ where
 
     /// Returns current accelerometer data in m/s^2 units.
     /// Available only in modes in which accelerometer is enabled.
-    pub fn accel_data(&mut self) -> Result<Vector3<f32>, Error<E>> {
+    pub fn accel_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
         match self.mode {
-            |   BNO055OperationMode::ACC_ONLY
-            |   BNO055OperationMode::ACC_GYRO
-            |   BNO055OperationMode::ACC_MAG
-            |   BNO055OperationMode::AMG => {
+            BNO055OperationMode::ACC_ONLY
+            | BNO055OperationMode::ACC_GYRO
+            | BNO055OperationMode::ACC_MAG
+            | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
                 self.read_vec(BNO055_ACC_DATA_X_LSB, scaling)
             }
 
-            _ => return Err(Error::InvalidMode)
+            _ => return Err(Error::InvalidMode),
         }
     }
 
     /// Returns current gyroscope data in deg/s units.
     /// Available only in modes in which gyroscope is enabled.
-    pub fn gyro_data(&mut self) -> Result<Vector3<f32>, Error<E>> {
+    pub fn gyro_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
         match self.mode {
-            |   BNO055OperationMode::GYRO_ONLY
-            |   BNO055OperationMode::ACC_GYRO
-            |   BNO055OperationMode::MAG_GYRO
-            |   BNO055OperationMode::AMG => {
+            BNO055OperationMode::GYRO_ONLY
+            | BNO055OperationMode::ACC_GYRO
+            | BNO055OperationMode::MAG_GYRO
+            | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 16f32; // 1 deg/s = 16 lsb
                 self.read_vec(BNO055_GYR_DATA_X_LSB, scaling)
             }
 
-            _ => return Err(Error::InvalidMode)
+            _ => return Err(Error::InvalidMode),
         }
     }
 
     /// Returns current magnetometer data in uT units.
     /// Available only in modes in which magnetometer is enabled.
-    pub fn mag_data(&mut self) -> Result<Vector3<f32>, Error<E>> {
+    pub fn mag_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
         match self.mode {
-            |   BNO055OperationMode::MAG_ONLY
-            |   BNO055OperationMode::ACC_MAG
-            |   BNO055OperationMode::MAG_GYRO
-            |   BNO055OperationMode::AMG => {
+            BNO055OperationMode::MAG_ONLY
+            | BNO055OperationMode::ACC_MAG
+            | BNO055OperationMode::MAG_GYRO
+            | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 16f32; // 1 uT = 16 lsb
                 self.read_vec(BNO055_MAG_DATA_X_LSB, scaling)
             }
 
-            _ => return Err(Error::InvalidMode)
+            _ => return Err(Error::InvalidMode),
         }
     }
 
