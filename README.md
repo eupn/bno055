@@ -31,11 +31,13 @@ and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor re
 
     ```rust
     // ... declare and configure your I2c and Delay implementations ...
-    
+    // let i2c = ...;
+    // let delay = ...;
+
     // Init BNO055 IMU
-    let imu = bno055::Bno055::new(i2c, delay);
+    let imu = bno055::Bno055::new(i2c);
     
-    imu.init()?;
+    imu.init(&mut delay)?;
     
     // Enable 9-degrees-of-freedom sensor fusion mode with fast magnetometer calibration
     imu.set_mode(bno055::BNO055OperationMode::NDOF)?;
@@ -52,7 +54,7 @@ and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor re
     ```
 
     >Due to the BNO055 firmware bugs, the Euler angles reading shouldn't be relied on. 
-    I recommend to stick with quaternion readings and convert it to the Euler angles later and if needed.
+    I recommend to stick with quaternion readings and convert them to the Euler angles later if needed.
 
 ## Details and examples
 
@@ -65,7 +67,7 @@ use bno055::{BNO055Calibration, BNO055OperationMode, BNO055_CALIB_SIZE};
 
 let bno055 = ...;
 
-// Enter NDOF (ansolute orientation) sensor fusion mode which is also performing
+// Enter NDOF (absolute orientation) sensor fusion mode which is also performing
 // a regular sensors calibration
 bno055.set_mode(BNO055OperationMode::NDOF)?;
 
@@ -96,11 +98,11 @@ let calib = BNO055Calibration::from_buf(buf);
 bno055.set_calibration_profile(calib)?;
 ```
 
-### Remapping axes to correspond your mounting
+### Remapping of axes to correspond your mounting
 
-BNO055 allows to change default axes to meet chip orientation with
+BNO055 allows to change default axes to meet the chip orientation with
 actual physical device orientation, thus providing possibility to place BNO055 
-chip on PCB as suitable for designer and to match chip's axes to physical 
+chip on PCB as suitable for a designer and to match chip's axes to physical 
 axes in software later.
 
 ```rust
@@ -163,6 +165,8 @@ To connect to device with alternative address, enable its use by calling `with_a
 // use default 0x29 address
 let mut bno = bno055::Bno055::new(i2c, delay);
 
+// or:
+
 // use 0x28 address
 let mut bno = bno055::Bno055::new(i2c, delay).with_alternative_address();
 ```
@@ -213,7 +217,7 @@ What is done and tested and what is not yet:
     - [x] Raw magnetometer data readout
 - [x] Linear acceleration data readout
 - [x] Gravity vector data readout
-- [ ] Per-sensor configuration (when not in fusion mode)
 - [x] Temperature readout
+- [ ] Per-sensor configuration (when not in fusion mode)
 - [ ] Unit selection
 - [ ] Interrupts
