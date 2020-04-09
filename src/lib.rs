@@ -11,6 +11,8 @@ use bitflags::bitflags;
 use byteorder::{ByteOrder, LittleEndian};
 pub use mint;
 
+mod regs;
+
 /// All possible errors in this crate
 #[derive(Debug)]
 pub enum Error<E> {
@@ -44,7 +46,7 @@ where
         }
     }
 
-    /// Enables use of alternative I2C address `BNO055_ALTERNATE_ADDR`.
+    /// Enables use of alternative I2C address `regs::BNO055_ALTERNATE_ADDR`.
     pub fn with_alternative_address(mut self) -> Self {
         self.use_default_addr = false;
 
@@ -62,14 +64,14 @@ where
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let id = self.id()?;
-        if id != BNO055_ID {
+        if id != regs::BNO055_ID {
             return Err(Error::InvalidChipId(id));
         }
 
         self.soft_reset()?;
         self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
         self.set_power_mode(BNO055PowerMode::NORMAL)?;
-        self.write_u8(BNO055_SYS_TRIGGER, 0x00)
+        self.write_u8(regs::BNO055_SYS_TRIGGER, 0x00)
             .map_err(Error::I2c)?;
 
         Ok(())
@@ -80,7 +82,7 @@ where
     pub fn soft_reset(&mut self) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        self.write_u8(BNO055_SYS_TRIGGER, BNO055_SYS_TRIGGER_RST_SYS_BIT)
+        self.write_u8(regs::BNO055_SYS_TRIGGER, regs::BNO055_SYS_TRIGGER_RST_SYS_BIT)
             .map_err(Error::I2c)
     }
 
@@ -96,7 +98,7 @@ where
 
             self.mode = mode;
 
-            self.write_u8(BNO055_OPR_MODE, mode.bits())
+            self.write_u8(regs::BNO055_OPR_MODE, mode.bits())
                 .map_err(Error::I2c)?;
 
             // Table 3-6 says 19ms to switch to CONFIG_MODE
@@ -111,7 +113,7 @@ where
     pub fn set_power_mode(&mut self, mode: BNO055PowerMode) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        self.write_u8(BNO055_PWR_MODE, mode.bits())
+        self.write_u8(regs::BNO055_PWR_MODE, mode.bits())
             .map_err(Error::I2c)?;
 
         Ok(())
@@ -121,7 +123,7 @@ where
     pub fn power_mode(&mut self) -> Result<BNO055PowerMode, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let mode = self.read_u8(BNO055_PWR_MODE).map_err(Error::I2c)?;
+        let mode = self.read_u8(regs::BNO055_PWR_MODE).map_err(Error::I2c)?;
 
         Ok(BNO055PowerMode::from_bits_truncate(mode))
     }
@@ -136,7 +138,7 @@ where
 
         let prev = self.mode;
         self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
-        self.write_u8(BNO055_SYS_TRIGGER, if ext { 0x80 } else { 0x00 })
+        self.write_u8(regs::BNO055_SYS_TRIGGER, if ext { 0x80 } else { 0x00 })
             .map_err(Error::I2c)?;
 
         self.set_mode(prev, delay)?;
@@ -148,11 +150,11 @@ where
     pub fn set_axis_remap(&mut self, remap: AxisRemap) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let remap_value = ((remap.x.bits() & 0b11) << 0)
+        let remap_value = (remap.x.bits() & 0b11)
             | ((remap.y.bits() & 0b11) << 2)
             | ((remap.z.bits() & 0b11) << 4);
 
-        self.write_u8(BNO055_AXIS_MAP_CONFIG, remap_value)
+        self.write_u8(regs::BNO055_AXIS_MAP_CONFIG, remap_value)
             .map_err(Error::I2c)?;
 
         Ok(())
@@ -162,7 +164,7 @@ where
     pub fn axis_remap(&mut self) -> Result<AxisRemap, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let value = self.read_u8(BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
+        let value = self.read_u8(regs::BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
 
         let remap = AxisRemap {
             x: BNO055AxisConfig::from_bits_truncate(value & 0b11),
@@ -177,7 +179,7 @@ where
     pub fn set_axis_sign(&mut self, sign: BNO055AxisSign) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        self.write_u8(BNO055_AXIS_MAP_SIGN, sign.bits())
+        self.write_u8(regs::BNO055_AXIS_MAP_SIGN, sign.bits())
             .map_err(Error::I2c)?;
 
         Ok(())
@@ -187,7 +189,7 @@ where
     pub fn axis_sign(&mut self) -> Result<BNO055AxisSign, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let value = self.read_u8(BNO055_AXIS_MAP_SIGN).map_err(Error::I2c)?;
+        let value = self.read_u8(regs::BNO055_AXIS_MAP_SIGN).map_err(Error::I2c)?;
 
         Ok(BNO055AxisSign::from_bits_truncate(value))
     }
@@ -199,7 +201,7 @@ where
 
         let mut buf: [u8; 6] = [0; 6];
 
-        self.read_bytes(BNO055_ACC_ID, &mut buf)
+        self.read_bytes(regs::BNO055_ACC_ID, &mut buf)
             .map_err(Error::I2c)?;
 
         Ok(BNO055Revision {
@@ -223,9 +225,9 @@ where
             let prev = self.mode;
             self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
 
-            let sys_trigger = self.read_u8(BNO055_SYS_TRIGGER).map_err(Error::I2c)?;
+            let sys_trigger = self.read_u8(regs::BNO055_SYS_TRIGGER).map_err(Error::I2c)?;
 
-            self.write_u8(BNO055_SYS_TRIGGER, sys_trigger | 0x1)
+            self.write_u8(regs::BNO055_SYS_TRIGGER, sys_trigger | 0x1)
                 .map_err(Error::I2c)?;
 
             // Wait for self-test result
@@ -233,7 +235,7 @@ where
                 delay.delay_ms(255);
             }
 
-            let result = self.read_u8(BNO055_ST_RESULT).map_err(Error::I2c)?;
+            let result = self.read_u8(regs::BNO055_ST_RESULT).map_err(Error::I2c)?;
 
             self.set_mode(prev, delay)?; // Restore previous mode
 
@@ -242,8 +244,8 @@ where
             None
         };
 
-        let status = self.read_u8(BNO055_SYS_STATUS).map_err(Error::I2c)?;
-        let error = self.read_u8(BNO055_SYS_ERR).map_err(Error::I2c)?;
+        let status = self.read_u8(regs::BNO055_SYS_STATUS).map_err(Error::I2c)?;
+        let error = self.read_u8(regs::BNO055_SYS_ERR).map_err(Error::I2c)?;
 
         Ok(BNO055SystemStatus {
             status: BNO055SystemStatusCode::from_bits_truncate(status),
@@ -260,7 +262,7 @@ where
         // Device should be in fusion (IMU) mode to be able to produce quaternions
         if self.is_in_fusion_mode()? {
             let mut buf: [u8; 8] = [0; 8];
-            self.read_bytes(BNO055_QUA_DATA_W_LSB, &mut buf)
+            self.read_bytes(regs::BNO055_QUA_DATA_W_LSB, &mut buf)
                 .map_err(Error::I2c)?;
 
             let w = LittleEndian::read_i16(&buf[0..2]);
@@ -292,7 +294,7 @@ where
         if self.is_in_fusion_mode()? {
             let mut buf: [u8; 6] = [0; 6];
 
-            self.read_bytes(BNO055_EUL_HEADING_LSB, &mut buf)
+            self.read_bytes(regs::BNO055_EUL_HEADING_LSB, &mut buf)
                 .map_err(Error::I2c)?;
 
             let heading = LittleEndian::read_i16(&buf[0..2]) as f32;
@@ -313,7 +315,7 @@ where
     pub fn get_calibration_status(&mut self) -> Result<BNO055CalibrationStatus, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let status = self.read_u8(BNO055_CALIB_STAT).map_err(Error::I2c)?;
+        let status = self.read_u8(regs::BNO055_CALIB_STAT).map_err(Error::I2c)?;
 
         let sys = (status >> 6) & 0b11;
         let gyr = (status >> 4) & 0b11;
@@ -341,7 +343,7 @@ where
 
         let mut buf: [u8; BNO055_CALIB_SIZE] = [0; BNO055_CALIB_SIZE];
 
-        self.read_bytes(BNO055_ACC_OFFSET_X_LSB, &mut buf[..])
+        self.read_bytes(regs::BNO055_ACC_OFFSET_X_LSB, &mut buf[..])
             .map_err(Error::I2c)?;
 
         let res = BNO055Calibration::from_buf(&buf);
@@ -365,7 +367,7 @@ where
         let buf_profile = calib.as_bytes();
 
         // Combine register address and profile into single buffer
-        let buf_reg = [BNO055_ACC_OFFSET_X_LSB; 1];
+        let buf_reg = [regs::BNO055_ACC_OFFSET_X_LSB; 1];
         let mut buf_with_reg = [0u8; 1 + BNO055_CALIB_SIZE];
         for (to, from) in buf_with_reg
             .iter_mut()
@@ -387,14 +389,14 @@ where
     /// This ID is device model ID and not a BNO055's unique ID, whic is stored in different register.
     pub fn id(&mut self) -> Result<u8, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
-        self.read_u8(BNO055_CHIP_ID).map_err(Error::I2c)
+        self.read_u8(regs::BNO055_CHIP_ID).map_err(Error::I2c)
     }
 
     /// Returns device's operation mode.
     pub fn get_mode(&mut self) -> Result<BNO055OperationMode, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let mode = self.read_u8(BNO055_OPR_MODE).map_err(Error::I2c)?;
+        let mode = self.read_u8(regs::BNO055_OPR_MODE).map_err(Error::I2c)?;
         let mode = BNO055OperationMode::from_bits_truncate(mode);
         self.mode = mode;
 
@@ -418,7 +420,7 @@ where
 
     /// Sets current register map page.
     fn set_page(&mut self, page: BNO055RegisterPage) -> Result<(), Error<E>> {
-        self.write_u8(BNO055_PAGE_ID, page.bits())
+        self.write_u8(regs::BNO055_PAGE_ID, page.bits())
             .map_err(Error::I2c)?;
 
         Ok(())
@@ -443,7 +445,7 @@ where
         if self.is_in_fusion_mode()? {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-            self.read_vec(BNO055_LIA_DATA_X_LSB, scaling)
+            self.read_vec(regs::BNO055_LIA_DATA_X_LSB, scaling)
         } else {
             Err(Error::InvalidMode)
         }
@@ -455,7 +457,7 @@ where
         if self.is_in_fusion_mode()? {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-            self.read_vec(BNO055_GRV_DATA_X_LSB, scaling)
+            self.read_vec(regs::BNO055_GRV_DATA_X_LSB, scaling)
         } else {
             Err(Error::InvalidMode)
         }
@@ -471,7 +473,7 @@ where
             | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-                self.read_vec(BNO055_ACC_DATA_X_LSB, scaling)
+                self.read_vec(regs::BNO055_ACC_DATA_X_LSB, scaling)
             }
 
             _ => Err(Error::InvalidMode),
@@ -488,7 +490,7 @@ where
             | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 16f32; // 1 deg/s = 16 lsb
-                self.read_vec(BNO055_GYR_DATA_X_LSB, scaling)
+                self.read_vec(regs::BNO055_GYR_DATA_X_LSB, scaling)
             }
 
             _ => Err(Error::InvalidMode),
@@ -505,7 +507,7 @@ where
             | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
                 let scaling = 1f32 / 16f32; // 1 uT = 16 lsb
-                self.read_vec(BNO055_MAG_DATA_X_LSB, scaling)
+                self.read_vec(regs::BNO055_MAG_DATA_X_LSB, scaling)
             }
 
             _ => Err(Error::InvalidMode),
@@ -517,16 +519,16 @@ where
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         // Read temperature signed byte
-        let temp = self.read_u8(BNO055_TEMP).map_err(Error::I2c)? as i8;
+        let temp = self.read_u8(regs::BNO055_TEMP).map_err(Error::I2c)? as i8;
         Ok(temp)
     }
 
     #[inline(always)]
     fn i2c_addr(&self) -> u8 {
         if !self.use_default_addr {
-            BNO055_ALTERNATE_ADDR
+            regs::BNO055_ALTERNATE_ADDR
         } else {
-            BNO055_DEFAULT_ADDR
+            regs::BNO055_DEFAULT_ADDR
         }
     }
 
@@ -549,126 +551,6 @@ where
         Ok(())
     }
 }
-
-// --- Regs definition ---
-
-pub const BNO055_DEFAULT_ADDR: u8 = 0x29;
-pub const BNO055_ALTERNATE_ADDR: u8 = 0x28;
-pub const BNO055_ID: u8 = 0xA0;
-
-pub const BNO055_PAGE_ID: u8 = 0x07;
-
-pub const BNO055_CHIP_ID: u8 = 0x00;
-pub const BNO055_ACC_ID: u8 = 0x01;
-pub const BNO055_MAG_ID: u8 = 0x02;
-pub const BNO055_GYR_ID: u8 = 0x03;
-pub const BNO055_SW_REV_ID_LSB: u8 = 0x04;
-pub const BNO055_SW_REV_ID_MSB: u8 = 0x05;
-pub const BNO055_BL_REV_ID: u8 = 0x06;
-
-pub const BNO055_ACC_DATA_X_LSB: u8 = 0x08;
-pub const BNO055_ACC_DATA_X_MSB: u8 = 0x09;
-pub const BNO055_ACC_DATA_Y_LSB: u8 = 0x0A;
-pub const BNO055_ACC_DATA_Y_MSB: u8 = 0x0B;
-pub const BNO055_ACC_DATA_Z_LSB: u8 = 0x0C;
-pub const BNO055_ACC_DATA_Z_MSB: u8 = 0x0D;
-
-pub const BNO055_MAG_DATA_X_LSB: u8 = 0x0E;
-pub const BNO055_MAG_DATA_X_MSB: u8 = 0x0F;
-pub const BNO055_MAG_DATA_Y_LSB: u8 = 0x10;
-pub const BNO055_MAG_DATA_Y_MSB: u8 = 0x11;
-pub const BNO055_MAG_DATA_Z_LSB: u8 = 0x12;
-pub const BNO055_MAG_DATA_Z_MSB: u8 = 0x13;
-
-pub const BNO055_GYR_DATA_X_LSB: u8 = 0x14;
-pub const BNO055_GYR_DATA_X_MSB: u8 = 0x15;
-pub const BNO055_GYR_DATA_Y_LSB: u8 = 0x16;
-pub const BNO055_GYR_DATA_Y_MSB: u8 = 0x17;
-pub const BNO055_GYR_DATA_Z_LSB: u8 = 0x18;
-pub const BNO055_GYR_DATA_Z_MSB: u8 = 0x19;
-
-pub const BNO055_EUL_HEADING_LSB: u8 = 0x1A;
-pub const BNO055_EUL_HEADING_MSB: u8 = 0x1B;
-pub const BNO055_EUL_ROLL_LSB: u8 = 0x1C;
-pub const BNO055_EUL_ROLL_MSB: u8 = 0x1D;
-pub const BNO055_EUL_PITCH_LSB: u8 = 0x1E;
-pub const BNO055_EUL_PITCH_MSB: u8 = 0x1F;
-
-/// Quaternion data
-pub const BNO055_QUA_DATA_W_LSB: u8 = 0x20;
-pub const BNO055_QUA_DATA_W_MSB: u8 = 0x21;
-pub const BNO055_QUA_DATA_X_LSB: u8 = 0x22;
-pub const BNO055_QUA_DATA_X_MSB: u8 = 0x23;
-pub const BNO055_QUA_DATA_Y_LSB: u8 = 0x24;
-pub const BNO055_QUA_DATA_Y_MSB: u8 = 0x25;
-pub const BNO055_QUA_DATA_Z_LSB: u8 = 0x26;
-pub const BNO055_QUA_DATA_Z_MSB: u8 = 0x27;
-
-/// Linear acceleration data
-pub const BNO055_LIA_DATA_X_LSB: u8 = 0x28;
-pub const BNO055_LIA_DATA_X_MSB: u8 = 0x29;
-pub const BNO055_LIA_DATA_Y_LSB: u8 = 0x2A;
-pub const BNO055_LIA_DATA_Y_MSB: u8 = 0x2B;
-pub const BNO055_LIA_DATA_Z_LSB: u8 = 0x2C;
-pub const BNO055_LIA_DATA_Z_MSB: u8 = 0x2D;
-
-/// Gravity vector data
-pub const BNO055_GRV_DATA_X_LSB: u8 = 0x2E;
-pub const BNO055_GRV_DATA_X_MSB: u8 = 0x2F;
-pub const BNO055_GRV_DATA_Y_LSB: u8 = 0x30;
-pub const BNO055_GRV_DATA_Y_MSB: u8 = 0x31;
-pub const BNO055_GRV_DATA_Z_LSB: u8 = 0x32;
-pub const BNO055_GRV_DATA_Z_MSB: u8 = 0x33;
-
-/// Temperature data
-pub const BNO055_TEMP: u8 = 0x34;
-
-/// Calibration Status
-pub const BNO055_CALIB_STAT: u8 = 0x35;
-
-pub const BNO055_ST_RESULT: u8 = 0x36;
-pub const BNO055_INT_STA: u8 = 0x37;
-pub const BNO055_SYS_CLK_STATUS: u8 = 0x38;
-pub const BNO055_SYS_STATUS: u8 = 0x39;
-pub const BNO055_SYS_ERR: u8 = 0x3A;
-pub const BNO055_UNIT_SEL: u8 = 0x3B;
-pub const BNO055_OPR_MODE: u8 = 0x3D;
-pub const BNO055_PWR_MODE: u8 = 0x3E;
-
-pub const BNO055_SYS_TRIGGER: u8 = 0x3F;
-pub const BNO055_SYS_TRIGGER_RST_SYS_BIT: u8 = 0x20; // Reset command
-pub const BNO055_SYS_TRIGGER_SELF_TEST_BIT: u8 = 0b000_0001; // Self-test command
-pub const BNO055_TEMP_SOURCE: u8 = 0x40;
-pub const BNO055_AXIS_MAP_CONFIG: u8 = 0x41;
-pub const BNO055_AXIS_MAP_SIGN: u8 = 0x42;
-
-/// Calibration data
-
-pub const BNO055_ACC_OFFSET_X_LSB: u8 = 0x55;
-pub const BNO055_ACC_OFFSET_X_MSB: u8 = 0x56;
-pub const BNO055_ACC_OFFSET_Y_LSB: u8 = 0x57;
-pub const BNO055_ACC_OFFSET_Y_MSB: u8 = 0x58;
-pub const BNO055_ACC_OFFSET_Z_LSB: u8 = 0x59;
-pub const BNO055_ACC_OFFSET_Z_MSB: u8 = 0x5A;
-
-pub const BNO055_MAG_OFFSET_X_LSB: u8 = 0x5B;
-pub const BNO055_MAG_OFFSET_X_MSB: u8 = 0x5C;
-pub const BNO055_MAG_OFFSET_Y_LSB: u8 = 0x5D;
-pub const BNO055_MAG_OFFSET_Y_MSB: u8 = 0x5E;
-pub const BNO055_MAG_OFFSET_Z_LSB: u8 = 0x5F;
-pub const BNO055_MAG_OFFSET_Z_MSB: u8 = 0x60;
-
-pub const BNO055_GYR_OFFSET_X_LSB: u8 = 0x61;
-pub const BNO055_GYR_OFFSET_X_MSB: u8 = 0x62;
-pub const BNO055_GYR_OFFSET_Y_LSB: u8 = 0x63;
-pub const BNO055_GYR_OFFSET_Y_MSB: u8 = 0x64;
-pub const BNO055_GYR_OFFSET_Z_LSB: u8 = 0x65;
-pub const BNO055_GYR_OFFSET_Z_MSB: u8 = 0x66;
-
-pub const BNO055_ACC_RADIUS_LSB: u8 = 0x67;
-pub const BNO055_ACC_RADIUS_MSB: u8 = 0x68;
-pub const BNO055_MAG_RADIUS_LSB: u8 = 0x69;
-pub const BNO055_MAG_RADIUS_MSB: u8 = 0x6A;
 
 bitflags! {
     pub struct BNO055AxisConfig: u8 {
