@@ -4,7 +4,7 @@
 [![](https://img.shields.io/crates/v/bno055.svg?style=flat)](https://crates.io/crates/bno055)
 [![](https://img.shields.io/crates/d/bno055.svg?maxAge=3600)](https://crates.io/crates/bno055)
 
-<img src="bno055.jpg" width="400" height="250">
+<img src="bno055.jpg" width="400" height="400">
 
 ## What is this?
 
