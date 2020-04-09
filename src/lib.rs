@@ -37,13 +37,11 @@ where
     /// Side-effect-free constructor.
     /// Nothing will be read or written before `init()` call.
     pub fn new(i2c: I) -> Self {
-        let bno = Bno055 {
+         Bno055 {
             i2c,
             mode: BNO055OperationMode::CONFIG_MODE,
             use_default_addr: true,
-        };
-
-        bno
+        }
     }
 
     /// Enables use of alternative I2C address `BNO055_ALTERNATE_ADDR`.
@@ -167,7 +165,7 @@ where
         let value = self.read_u8(BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
 
         let remap = AxisRemap {
-            x: BNO055AxisConfig::from_bits_truncate((value >> 0) & 0b11),
+            x: BNO055AxisConfig::from_bits_truncate(value & 0b11),
             y: BNO055AxisConfig::from_bits_truncate((value >> 2) & 0b11),
             z: BNO055AxisConfig::from_bits_truncate((value >> 4) & 0b11),
         };
@@ -320,7 +318,7 @@ where
         let sys = (status >> 6) & 0b11;
         let gyr = (status >> 4) & 0b11;
         let acc = (status >> 2) & 0b11;
-        let mag = (status >> 0) & 0b11;
+        let mag = status & 0b11;
 
         Ok(BNO055CalibrationStatus { sys, gyr, acc, mag })
     }
@@ -476,7 +474,7 @@ where
                 self.read_vec(BNO055_ACC_DATA_X_LSB, scaling)
             }
 
-            _ => return Err(Error::InvalidMode),
+            _ => Err(Error::InvalidMode),
         }
     }
 
@@ -493,7 +491,7 @@ where
                 self.read_vec(BNO055_GYR_DATA_X_LSB, scaling)
             }
 
-            _ => return Err(Error::InvalidMode),
+            _ => Err(Error::InvalidMode),
         }
     }
 
@@ -510,7 +508,7 @@ where
                 self.read_vec(BNO055_MAG_DATA_X_LSB, scaling)
             }
 
-            _ => return Err(Error::InvalidMode),
+            _ => Err(Error::InvalidMode),
         }
     }
 
