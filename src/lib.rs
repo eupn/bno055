@@ -39,7 +39,7 @@ where
     /// Side-effect-free constructor.
     /// Nothing will be read or written before `init()` call.
     pub fn new(i2c: I) -> Self {
-         Bno055 {
+        Bno055 {
             i2c,
             mode: BNO055OperationMode::CONFIG_MODE,
             use_default_addr: true,
@@ -82,8 +82,11 @@ where
     pub fn soft_reset(&mut self) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        self.write_u8(regs::BNO055_SYS_TRIGGER, regs::BNO055_SYS_TRIGGER_RST_SYS_BIT)
-            .map_err(Error::I2c)
+        self.write_u8(
+            regs::BNO055_SYS_TRIGGER,
+            regs::BNO055_SYS_TRIGGER_RST_SYS_BIT,
+        )
+        .map_err(Error::I2c)
     }
 
     /// Sets the operating mode, see [BNO055OperationMode](enum.BNO055OperationMode.html).
@@ -164,7 +167,9 @@ where
     pub fn axis_remap(&mut self) -> Result<AxisRemap, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let value = self.read_u8(regs::BNO055_AXIS_MAP_CONFIG).map_err(Error::I2c)?;
+        let value = self
+            .read_u8(regs::BNO055_AXIS_MAP_CONFIG)
+            .map_err(Error::I2c)?;
 
         let remap = AxisRemap {
             x: BNO055AxisConfig::from_bits_truncate(value & 0b11),
@@ -189,7 +194,9 @@ where
     pub fn axis_sign(&mut self) -> Result<BNO055AxisSign, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
-        let value = self.read_u8(regs::BNO055_AXIS_MAP_SIGN).map_err(Error::I2c)?;
+        let value = self
+            .read_u8(regs::BNO055_AXIS_MAP_SIGN)
+            .map_err(Error::I2c)?;
 
         Ok(BNO055AxisSign::from_bits_truncate(value))
     }
