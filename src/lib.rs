@@ -60,7 +60,7 @@ where
     /// - Sets BNO055 to CONFIG mode
     /// - Sets BNO055's power mode to NORMAL
     /// - Clears SYS_TRIGGER register
-    pub fn init(&mut self, delay: &mut dyn DelayMs<u8>) -> Result<(), Error<E>> {
+    pub fn init(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let id = self.id()?;
@@ -68,7 +68,7 @@ where
             return Err(Error::InvalidChipId(id));
         }
 
-        self.soft_reset()?;
+        self.soft_reset(delay)?;
         self.set_mode(BNO055OperationMode::CONFIG_MODE, delay)?;
         self.set_power_mode(BNO055PowerMode::NORMAL)?;
         self.write_u8(regs::BNO055_SYS_TRIGGER, 0x00)
@@ -79,14 +79,18 @@ where
 
     /// Resets the BNO055, initializing the register map to default values.
     /// More in section 3.2.
-    pub fn soft_reset(&mut self) -> Result<(), Error<E>> {
+    pub fn soft_reset(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         self.write_u8(
             regs::BNO055_SYS_TRIGGER,
             regs::BNO055_SYS_TRIGGER_RST_SYS_BIT,
         )
-        .map_err(Error::I2c)
+        .map_err(Error::I2c)?;
+
+        // As per table 1.2
+        delay.delay_ms(650);
+        Ok(())
     }
 
     /// Sets the operating mode, see [BNO055OperationMode](enum.BNO055OperationMode.html).
@@ -94,7 +98,7 @@ where
     pub fn set_mode(
         &mut self,
         mode: BNO055OperationMode,
-        delay: &mut dyn DelayMs<u8>,
+        delay: &mut dyn DelayMs<u16>,
     ) -> Result<(), Error<E>> {
         if self.mode != mode {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
@@ -135,7 +139,7 @@ where
     pub fn set_external_crystal(
         &mut self,
         ext: bool,
-        delay: &mut dyn DelayMs<u8>,
+        delay: &mut dyn DelayMs<u16>,
     ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -224,7 +228,7 @@ where
     pub fn get_system_status(
         &mut self,
         do_selftest: bool,
-        delay: &mut dyn DelayMs<u8>,
+        delay: &mut dyn DelayMs<u16>,
     ) -> Result<BNO055SystemStatus, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -341,7 +345,7 @@ where
     /// Reads current calibration profile of the device.
     pub fn calibration_profile(
         &mut self,
-        delay: &mut dyn DelayMs<u8>,
+        delay: &mut dyn DelayMs<u16>,
     ) -> Result<BNO055Calibration, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -364,7 +368,7 @@ where
     pub fn set_calibration_profile(
         &mut self,
         calib: BNO055Calibration,
-        delay: &mut dyn DelayMs<u8>,
+        delay: &mut dyn DelayMs<u16>,
     ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
