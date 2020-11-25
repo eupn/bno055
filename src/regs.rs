@@ -117,3 +117,7 @@ pub(crate) const BNO055_ACC_RADIUS_LSB: u8 = 0x67;
 pub(crate) const BNO055_ACC_RADIUS_MSB: u8 = 0x68;
 pub(crate) const BNO055_MAG_RADIUS_LSB: u8 = 0x69;
 pub(crate) const BNO055_MAG_RADIUS_MSB: u8 = 0x6A;
+
+/// Interrupts
+pub(crate) const BNO055_INT_MSK: u8 = 0x0F;
+pub(crate) const BNO055_INT_EN: u8 = 0x10;

@@ -534,6 +534,40 @@ where
         Ok(temp)
     }
 
+    /// Sets which interrupts are enabled
+    pub fn set_interrupts_enabled(&mut self, interrupts: BNO055Interrupt) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+        self.write_u8(regs::BNO055_INT_EN, interrupts.bits())
+            .map_err(Error::I2c)?;
+        Ok(())
+    }
+
+    /// Returns currently enabled interrupts
+    pub fn interrupts_enabled(&mut self) -> Result<BNO055Interrupt, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+        let interrupts = self.read_u8(regs::BNO055_INT_EN).map_err(Error::I2c)?;
+        let interrupts = BNO055Interrupt::from_bits_truncate(interrupts);
+        Ok(interrupts)
+    }
+
+    /// Sets interrupts mask
+    /// Official doc: when mask=1, the interrupt will update INT_STA register and trigger a change in INT pin,
+    /// When mask=0, only INT_STA register will be updated
+    pub fn set_interrupts_mask(&mut self, mask: BNO055Interrupt) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+        self.write_u8(regs::BNO055_INT_MSK, mask.bits())
+            .map_err(Error::I2c)?;
+        Ok(())
+    }
+
+    /// Returns the current interrupts mask
+    pub fn interrupts_mask(&mut self) -> Result<BNO055Interrupt, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+        let mask = self.read_u8(regs::BNO055_INT_MSK).map_err(Error::I2c)?;
+        let mask = BNO055Interrupt::from_bits_truncate(mask);
+        Ok(mask)
+    }
+
     #[inline(always)]
     fn i2c_addr(&self) -> u8 {
         if !self.use_default_addr {
@@ -825,5 +859,19 @@ bitflags! {
         const M4G = 0b1010;
         const NDOF_FMC_OFF = 0b1011;
         const NDOF = 0b1100;
+    }
+}
+
+bitflags! {
+    /// BNO055 interrupt enable/mask flags.
+    pub struct BNO055Interrupt: u8 {
+        const ACC_NM = 0b10000000;
+        const ACC_AM = 0b01000000;
+        const ACC_HIGH_G = 0b00100000;
+        const GYR_DRDY = 0b00010000;
+        const GYR_HIGH_RATE = 0b00001000;
+        const GYRO_AM = 0b00000100;
+        const MAG_DRDY = 0b00000010;
+        const ACC_BSX_DRDY = 0b00000001;
     }
 }
