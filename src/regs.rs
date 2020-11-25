@@ -84,6 +84,7 @@ pub(crate) const BNO055_OPR_MODE: u8 = 0x3D;
 pub(crate) const BNO055_PWR_MODE: u8 = 0x3E;
 
 pub(crate) const BNO055_SYS_TRIGGER: u8 = 0x3F;
+pub(crate) const BNO055_SYS_TRIGGER_RST_INT_BIT: u8 = 0x40; // Clear interrupts command
 pub(crate) const BNO055_SYS_TRIGGER_RST_SYS_BIT: u8 = 0x20; // Reset command
 pub(crate) const BNO055_SYS_TRIGGER_SELF_TEST_BIT: u8 = 0b000_0001; // Self-test command
 pub(crate) const BNO055_TEMP_SOURCE: u8 = 0x40;
