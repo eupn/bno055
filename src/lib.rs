@@ -567,6 +567,19 @@ where
         let mask = BNO055Interrupt::from_bits_truncate(mask);
         Ok(mask)
     }
+    
+    pub fn set_acc_interrupt_settings(&mut self, settings: BNO055AccIntSettings) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+        self.write_u8(regs::BNO055_ACC_INT_SETTINGS, settings.into())
+            .map_err(Error::I2c)?;
+        Ok(())
+    }
+
+    pub fn acc_interrupt_settings(&mut self) -> Result<BNO055AccIntSettings, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+        let settings = self.read_u8(regs::BNO055_ACC_INT_SETTINGS).map_err(Error::I2c)?;
+        Ok(settings.into())
+    }
 
     #[inline(always)]
     fn i2c_addr(&self) -> u8 {
@@ -873,5 +886,38 @@ bitflags! {
         const GYRO_AM = 0b00000100;
         const MAG_DRDY = 0b00000010;
         const ACC_BSX_DRDY = 0b00000001;
+    }
+}
+
+bitflags! {
+    /// BNO055 accelerometer interrupt settings
+    pub struct BNO055AccIntSettingsFlags: u8 {
+        const HG_Z_AXIS = 0b10000000;
+        const HG_Y_AXIS = 0b01000000;
+        const HG_X_AXIS = 0b00100000;
+        const AMNM_Z_AXIS = 0b00010000;
+        const AMNM_Y_AXIS = 0b00001000;
+        const AMNM_X_AXIS = 0b00000100;
+    }
+}
+
+pub struct BNO055AccIntSettings {
+    flags: BNO055AccIntSettingsFlags,
+    /// am_dur in [0, 3]
+    am_dur: u8
+}
+
+impl From<u8> for BNO055AccIntSettings {
+    fn from(regval: u8) -> Self {
+        Self {
+            flags: BNO055AccIntSettingsFlags::from_bits_truncate(regval),
+            am_dur: regval & 3
+        }
+    }
+}
+
+impl Into<u8> for BNO055AccIntSettings {
+    fn into(self) -> u8 {
+        self.flags.bits() | (self.am_dur & 3)
     }
 }
