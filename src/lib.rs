@@ -46,6 +46,11 @@ where
         }
     }
 
+    /// Destroy driver instance, return I2C bus instance.
+    pub fn destroy(self) -> I {
+        self.i2c
+    }
+
     /// Enables use of alternative I2C address `regs::BNO055_ALTERNATE_ADDR`.
     pub fn with_alternative_address(mut self) -> Self {
         self.use_default_addr = false;
