@@ -2,6 +2,7 @@
 
 [![](https://img.shields.io/travis/eupn/bno055.svg?style=flat)](https://travis-ci.org/eupn/bno055)
 [![](https://img.shields.io/crates/v/bno055.svg?style=flat)](https://crates.io/crates/bno055)
+[![docs.rs](https://docs.rs/bno055/badge.svg)](https://docs.rs/bno055/)
 [![](https://img.shields.io/crates/d/bno055.svg?maxAge=3600)](https://crates.io/crates/bno055)
 
 <img src="bno055.jpg" width="400" height="400">
