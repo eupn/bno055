@@ -62,9 +62,39 @@ where
     ///
     /// Side-effects:
     /// - Software reset of BNO055
-    /// - Sets BNO055 to CONFIG mode
-    /// - Sets BNO055's power mode to NORMAL
-    /// - Clears SYS_TRIGGER register
+    /// - Sets BNO055 to `CONFIG` mode
+    /// - Sets BNO055's power mode to `NORMAL`
+    /// - Clears `SYS_TRIGGER` register
+    ///
+    /// # Usage Example
+    ///
+    /// ```rust
+    /// // use your_chip_hal::{I2c, Delay}; // <- import your chip's I2c and Delay
+    /// use bno055::Bno055;
+    /// #
+    /// # // All of this is needed for example to work:
+    /// # use bno055::BNO055_ID;
+    /// # use embedded_hal::blocking::delay::DelayMs;
+    /// # use embedded_hal::blocking::i2c::{WriteRead, Write};
+    /// # struct Delay {}
+    /// # impl Delay { pub fn new() -> Self { Delay{ } }}
+    /// # impl DelayMs<u8> for Delay {
+    /// #    fn delay_ms(&mut self, ms: u8) {
+    /// #        // no-op for example purposes
+    /// #    }
+    /// # }
+    /// # struct I2c {}
+    /// # impl I2c { pub fn new() -> Self { I2c { } }}
+    /// # impl WriteRead for I2c { type Error = (); fn write_read(&mut self, address: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<(), Self::Error> { buffer[0] = BNO055_ID; Ok(()) } }
+    /// # impl Write for I2c { type Error = (); fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> { Ok(()) } }
+    /// #
+    /// # // Actual example:
+    /// let mut delay = Delay::new(/* ... */);
+    /// let mut i2c = I2c::new(/* ... */);
+    /// let mut bno055 = Bno055::new(i2c);
+    /// bno055.init(&mut delay)?;
+    /// # Result::<(), bno055::Error<()>>::Ok(())
+    /// ```
     pub fn init(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
