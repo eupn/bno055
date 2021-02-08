@@ -647,6 +647,11 @@ where
         )
     }
 
+    /// Returns current accelerometer config settings
+    pub fn acc_config(&mut self) -> Result<BNO055AccConfig, Error<E>> {
+        read_u8_into!(self, BNO055RegisterPage::PAGE_1, regs::BNO055_ACC_CONFIG)
+    }
+
     /// Sets accelerometer interrupt settings
     pub fn set_acc_interrupt_settings(
         &mut self,
@@ -1464,5 +1469,147 @@ impl Into<u8> for BNO055GyrAmSettings {
         }
         let awake_duration: u8 = self.awake_duration.into();
         0b00001111 & (awake_duration | slope_samples)
+    }
+}
+
+#[derive(Debug)]
+pub struct BNO055AccConfig {
+    g_range: AccGRange,
+    bandwidth: AccBandwidth,
+    op_mode: AccOperationMode,
+}
+
+impl From<u8> for BNO055AccConfig {
+    fn from(regval: u8) -> Self {
+        Self {
+            g_range: regval.into(),
+            bandwidth: regval.into(),
+            op_mode: regval.into(),
+        }
+    }
+}
+
+impl Into<u8> for BNO055AccConfig {
+    fn into(self) -> u8 {
+        let g_range_b: u8 = self.g_range.into();
+        let bandwidth_b: u8 = self.bandwidth.into();
+        let op_mode_b: u8 = self.op_mode.into();
+        g_range_b | bandwidth_b | op_mode_b
+    }
+}
+
+#[derive(Debug)]
+pub enum AccGRange {
+    TwoG,
+    FourG,
+    EightG,
+    SixteenG,
+}
+
+impl From<u8> for AccGRange {
+    fn from(regval: u8) -> Self {
+        let val = regval & 3;
+        match val {
+            0 => Self::TwoG,
+            1 => Self::FourG,
+            2 => Self::EightG,
+            3 => Self::SixteenG,
+            _ => Self::TwoG, // TODO: handle error case?
+        }
+    }
+}
+
+impl Into<u8> for AccGRange {
+    fn into(self) -> u8 {
+        match self {
+            Self::TwoG => 0,
+            Self::FourG => 1,
+            Self::EightG => 2,
+            Self::SixteenG => 3,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum AccBandwidth {
+    Hz7_81,
+    Hz15_63,
+    Hz31_25,
+    Hz62_5,
+    Hz125,
+    Hz250,
+    Hz500,
+    Hz1000,
+}
+
+impl From<u8> for AccBandwidth {
+    fn from(regval: u8) -> Self {
+        let val = (regval >> 2) & 7;
+        match val {
+            0 => Self::Hz7_81,
+            1 => Self::Hz15_63,
+            2 => Self::Hz31_25,
+            3 => Self::Hz62_5,
+            4 => Self::Hz125,
+            5 => Self::Hz250,
+            6 => Self::Hz500,
+            7 => Self::Hz1000,
+            _ => Self::Hz7_81, // TODO: handle error case?
+        }
+    }
+}
+
+impl Into<u8> for AccBandwidth {
+    fn into(self) -> u8 {
+        let to_shift = match self {
+            Self::Hz7_81 => 0,
+            Self::Hz15_63 => 1,
+            Self::Hz31_25 => 2,
+            Self::Hz62_5 => 3,
+            Self::Hz125 => 4,
+            Self::Hz250 => 5,
+            Self::Hz500 => 6,
+            Self::Hz1000 => 7,
+        };
+        to_shift << 2
+    }
+}
+
+#[derive(Debug)]
+pub enum AccOperationMode {
+    Normal,
+    Suspend,
+    LowPower1,
+    Standby,
+    LowPower2,
+    DeepSuspend,
+}
+
+impl From<u8> for AccOperationMode {
+    fn from(regval: u8) -> Self {
+        let val = (regval >> 5) & 7;
+        match val {
+            0 => Self::Normal,
+            1 => Self::Suspend,
+            2 => Self::LowPower1,
+            3 => Self::Standby,
+            4 => Self::LowPower2,
+            5 => Self::DeepSuspend,
+            _ => Self::Normal, // TODO: handle error case?
+        }
+    }
+}
+
+impl Into<u8> for AccOperationMode {
+    fn into(self) -> u8 {
+        let to_shift = match self {
+            Self::Normal => 0,
+            Self::Suspend => 1,
+            Self::LowPower1 => 2,
+            Self::Standby => 3,
+            Self::LowPower2 => 4,
+            Self::DeepSuspend => 5,
+        };
+        to_shift << 5
     }
 }

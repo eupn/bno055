@@ -137,3 +137,6 @@ pub(crate) const BNO055_GYR_HR_Z_SET: u8 = 0x1C;
 pub(crate) const BNO055_GYR_DUR_Z: u8 = 0x1D;
 pub(crate) const BNO055_GYR_AM_THRES: u8 = 0x1E;
 pub(crate) const BNO055_GYR_AM_SET: u8 = 0x1F;
+
+/// Config
+pub(crate) const BNO055_ACC_CONFIG: u8 = 0x08;
