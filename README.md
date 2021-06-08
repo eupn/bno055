@@ -20,6 +20,12 @@ Uses and re-exports [mint](https://crates.io/crates/mint)'s
 and [EulerAngles](https://docs.rs/mint/0.5.1/mint/struct.EulerAngles.html) for Euler angles
 and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor readings.
 
+## Feature flags
+
+### `std`
+
+By default, this crate is `no_std` compatible. However you can enable `std` features by enabling the `std` feature flag. At the moment this only adds `std::error::Error` trait implementation for the `Error` type.
+
 ## Usage
 
 1. Add dependency to `Cargo.toml`:
