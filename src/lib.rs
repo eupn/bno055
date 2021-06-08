@@ -1,5 +1,5 @@
 #![doc(html_root_url = "https://docs.rs/bno055/0.3.2")]
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 ///! Bosch Sensortec BNO055 9-axis IMU sensor driver.
 ///! Datasheet: https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf
@@ -13,6 +13,8 @@ use byteorder::{ByteOrder, LittleEndian};
 pub use mint;
 
 mod regs;
+#[cfg(feature = "std")]
+mod std;
 
 /// All possible errors in this crate
 #[derive(Debug)]

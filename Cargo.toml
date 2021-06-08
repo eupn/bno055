@@ -25,3 +25,7 @@ bitflags = "1"
 [dependencies.embedded-hal]
 version = "0.2.2"
 features = ["unproven"]
+
+[features]
+default = []
+std = []
