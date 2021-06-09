@@ -11,6 +11,8 @@ use embedded_hal::{
 use bitflags::bitflags;
 use byteorder::{ByteOrder, LittleEndian};
 pub use mint;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 mod regs;
 #[cfg(feature = "std")]
@@ -775,6 +777,7 @@ pub struct BNO055Revision {
 }
 
 #[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct BNO055Calibration {
     pub acc_offset_x_lsb: u8,
