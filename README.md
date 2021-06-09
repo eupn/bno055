@@ -26,6 +26,12 @@ and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor re
 
 By default, this crate is `no_std` compatible. However you can enable `std` features by enabling the `std` feature flag. At the moment this only adds `std::error::Error` trait implementation for the `Error` type.
 
+### `serde`
+
+The `serde` flag adds implementation of `Serialize` / `Deserialize` to `BNO055Calibration`.
+
+**Note:** `serde` itself is `no_std` compatible however not all serializers are (e.g. `serde-json` is not but `serde-json-core` is), so be careful that you're not enabling `serde`'s `std` feature by accident (see [here](https://serde.rs/no-std.html#no-std-support) for a complete explanation).
+
 ## Usage
 
 1. Add dependency to `Cargo.toml`:

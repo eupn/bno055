@@ -19,6 +19,7 @@ readme = "README.md"
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
+serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
 mint = "^0.5.4"
 bitflags = "1"
 
