@@ -652,6 +652,21 @@ where
         read_u8_into!(self, BNO055RegisterPage::PAGE_1, regs::BNO055_ACC_CONFIG)
     }
 
+    /// Sets accelerometer config settings
+    pub fn set_acc_config(
+        &mut self,
+        cfg: BNO055AccConfig,
+        delay: &mut dyn DelayMs<u16>,
+    ) -> Result<(), Error<E>> {
+        set_config_from!(
+            self,
+            BNO055RegisterPage::PAGE_1,
+            regs::BNO055_ACC_CONFIG,
+            cfg,
+            delay
+        )
+    }
+
     /// Sets accelerometer interrupt settings
     pub fn set_acc_interrupt_settings(
         &mut self,
