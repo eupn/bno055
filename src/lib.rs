@@ -1489,9 +1489,9 @@ impl Into<u8> for BNO055GyrAmSettings {
 
 #[derive(Debug)]
 pub struct BNO055AccConfig {
-    g_range: AccGRange,
-    bandwidth: AccBandwidth,
-    op_mode: AccOperationMode,
+    pub g_range: AccGRange,
+    pub bandwidth: AccBandwidth,
+    pub op_mode: AccOperationMode,
 }
 
 impl From<u8> for BNO055AccConfig {
