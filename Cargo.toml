@@ -30,3 +30,6 @@ features = ["unproven"]
 [features]
 default = []
 std = []
+
+[dev-dependencies]
+linux-embedded-hal = "0.3"
