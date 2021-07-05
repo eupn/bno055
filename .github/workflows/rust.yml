@@ -19,7 +19,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: ${{ matrix.toolchain }}
+        toolchain: nightly
         override: true
         target: thumbv7em-none-eabihf
         components: clippy
