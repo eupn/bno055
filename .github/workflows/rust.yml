@@ -33,6 +33,8 @@ jobs:
       run: cargo build --features "serde"
     - name: Build - examples
       run: cargo build --examples
+    - name: Test - docs
+      run: cargo test --doc
     - name: Clippy
       uses: actions-rs/clippy-check@v1
       with:
