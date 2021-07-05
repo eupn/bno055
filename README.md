@@ -8,10 +8,10 @@
 
 ## What is this?
 
-This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver 
+This is a [embedded-hal](https://github.com/rust-embedded/embedded-hal) driver
 for Bosch's Absolute Orientation Sensor [BNO055](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf).
 
-It is device-agnostic and uses embedded-hal's `Write`/`WriteRead` (for I2C) 
+It is device-agnostic and uses embedded-hal's `Write`/`WriteRead` (for I2C)
 and `Delay` traits for its operation.
 
 Uses and re-exports [mint](https://crates.io/crates/mint)'s
@@ -38,7 +38,7 @@ The `serde` flag adds implementation of `Serialize` / `Deserialize` to `BNO055Ca
     ```bash
     cargo add bno055
     ```
-    
+
 2. Instantiate and init the device:
 
     ```rust
@@ -48,12 +48,12 @@ The `serde` flag adds implementation of `Serialize` / `Deserialize` to `BNO055Ca
 
     // Init BNO055 IMU
     let imu = bno055::Bno055::new(i2c);
-    
+
     imu.init(&mut delay)?;
-    
+
     // Enable 9-degrees-of-freedom sensor fusion mode with fast magnetometer calibration
     imu.set_mode(bno055::BNO055OperationMode::NDOF)?;
-    
+
     Ok(imu)
     ```
 
@@ -65,7 +65,7 @@ The `serde` flag adds implementation of `Serialize` / `Deserialize` to `BNO055Ca
     let euler: mint::EulerAngles<f32, ()> = imu.euler_angles()?;
     ```
 
-    >Due to the BNO055 firmware bugs, the Euler angles reading shouldn't be relied on. 
+    >Due to the BNO055 firmware bugs, the Euler angles reading shouldn't be relied on.
     I recommend to stick with quaternion readings and convert them to the Euler angles later if needed.
 
 ## Details and examples
@@ -113,8 +113,8 @@ bno055.set_calibration_profile(calib)?;
 ### Remapping of axes to correspond your mounting
 
 BNO055 allows to change default axes to meet the chip orientation with
-actual physical device orientation, thus providing possibility to place BNO055 
-chip on PCB as suitable for a designer and to match chip's axes to physical 
+actual physical device orientation, thus providing possibility to place BNO055
+chip on PCB as suitable for a designer and to match chip's axes to physical
 axes in software later.
 
 ```rust
@@ -126,7 +126,7 @@ let remap = AxisRemap::builder()
     .swap_x_with(BNO055AxisConfig::AXIS_AS_Y)
     .build()
     .expect("Failed to build axis remap config");
-    
+
 bno055.set_axis_remap(remap)?;
 ```
 
@@ -140,7 +140,7 @@ AxisRemap::builder()
     .swap_x_with(BNO055AxisConfig::AXIS_AS_Z)
     .build()
     .unwrap(); // <- panics, .build() returned Err
-``` 
+```
 
 ### Changing axes sign
 
