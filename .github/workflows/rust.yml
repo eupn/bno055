@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Install Rust (thumbv7em)
-      uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
         toolchain: nightly
@@ -24,6 +24,7 @@ jobs:
         target: thumbv7em-none-eabihf
         components: clippy
     - name: Build (default features)
+    - uses: actions/checkout@v2
       run: cargo build --verbose
     - uses: actions-rs/clippy-check@v1
       with:
