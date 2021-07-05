@@ -25,8 +25,14 @@ jobs:
         components: clippy
     - name: Checkout Sources
       uses: actions/checkout@v2
-    - name: Build (default features)
-      run: cargo build --verbose
+    - name: Build - default features
+      run: cargo build
+    - name: Build - std
+      run: cargo build --features "std"
+    - name: Build - serde
+      run: cargo build --features "serde"
+    - name: Build - examples
+      run: cargo build --examples
     - name: Clippy
       uses: actions-rs/clippy-check@v1
       with:
