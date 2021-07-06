@@ -2,7 +2,7 @@
 
 pub(crate) const BNO055_DEFAULT_ADDR: u8 = 0x29;
 pub(crate) const BNO055_ALTERNATE_ADDR: u8 = 0x28;
-pub(crate) const BNO055_ID: u8 = 0xA0;
+pub const BNO055_ID: u8 = 0xA0;
 
 pub(crate) const BNO055_PAGE_ID: u8 = 0x07;
 

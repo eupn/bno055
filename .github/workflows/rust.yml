@@ -1,0 +1,42 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Rust (thumbv7em)
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+        override: true
+        target: thumbv7em-none-eabihf
+        components: clippy
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+    - name: Build - default features
+      run: cargo build
+    - name: Build - std
+      run: cargo build --features "std"
+    - name: Build - serde
+      run: cargo build --features "serde"
+    - name: Build - examples
+      run: cargo build --examples
+    - name: Test - docs
+      run: cargo test --doc
+    - name: Clippy
+      uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-features

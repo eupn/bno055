@@ -18,6 +18,8 @@ mod regs;
 #[cfg(feature = "std")]
 mod std;
 
+pub use regs::BNO055_ID;
+
 /// All possible errors in this crate
 #[derive(Debug)]
 pub enum Error<E> {
@@ -83,8 +85,8 @@ where
     /// # use embedded_hal::blocking::i2c::{WriteRead, Write};
     /// # struct Delay {}
     /// # impl Delay { pub fn new() -> Self { Delay{ } }}
-    /// # impl DelayMs<u8> for Delay {
-    /// #    fn delay_ms(&mut self, ms: u8) {
+    /// # impl DelayMs<u16> for Delay {
+    /// #    fn delay_ms(&mut self, ms: u16) {
     /// #        // no-op for example purposes
     /// #    }
     /// # }
