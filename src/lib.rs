@@ -479,17 +479,39 @@ where
         Ok(())
     }
 
-    /// Reads vector of sensor data from the device.
-    fn read_vec(&mut self, reg: u8, scaling: f32) -> Result<mint::Vector3<f32>, Error<E>> {
+    /// Reads a vector of sensor data from the device.
+    fn read_vec_raw(&mut self, reg: u8) -> Result<mint::Vector3<i16>, Error<E>> {
         let mut buf: [u8; 6] = [0; 6];
 
         self.read_bytes(reg, &mut buf).map_err(Error::I2c)?;
 
-        let x = LittleEndian::read_i16(&buf[0..2]) as f32;
-        let y = LittleEndian::read_i16(&buf[2..4]) as f32;
-        let z = LittleEndian::read_i16(&buf[4..6]) as f32;
+        let x = LittleEndian::read_i16(&buf[0..2]);
+        let y = LittleEndian::read_i16(&buf[2..4]);
+        let z = LittleEndian::read_i16(&buf[4..6]);
 
-        Ok(mint::Vector3::from([x * scaling, y * scaling, z * scaling]))
+        Ok(mint::Vector3::from([x, y, z]))
+    }
+
+    /// Reads vector of sensor data from the device & applies the given scaling.
+    fn read_vec(&mut self, reg: u8, scaling: f32) -> Result<mint::Vector3<f32>, Error<E>> {
+        let raw = self.read_vec_raw(reg)?;
+
+        Ok(mint::Vector3::from([
+            raw.x as f32 * scaling,
+            raw.y as f32 * scaling,
+            raw.z as f32 * scaling,
+        ]))
+    }
+
+    /// Returns linear acceleration vector in cm/s^2 units.
+    /// Available only in sensor fusion modes.
+    pub fn linear_acceleration_fixed(&mut self) -> Result<mint::Vector3<i16>, Error<E>> {
+        if self.is_in_fusion_mode()? {
+            self.set_page(BNO055RegisterPage::PAGE_0)?;
+            self.read_vec_raw(regs::BNO055_LIA_DATA_X_LSB)
+        } else {
+            Err(Error::InvalidMode)
+        }
     }
 
     /// Returns linear acceleration vector in m/s^2 units.
@@ -499,6 +521,17 @@ where
             self.set_page(BNO055RegisterPage::PAGE_0)?;
             let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
             self.read_vec(regs::BNO055_LIA_DATA_X_LSB, scaling)
+        } else {
+            Err(Error::InvalidMode)
+        }
+    }
+
+    /// Returns gravity vector in cm/s^2 units.
+    /// Available only in sensor fusion modes.
+    pub fn gravity_fixed(&mut self) -> Result<mint::Vector3<i16>, Error<E>> {
+        if self.is_in_fusion_mode()? {
+            self.set_page(BNO055RegisterPage::PAGE_0)?;
+            self.read_vec_raw(regs::BNO055_GRV_DATA_X_LSB)
         } else {
             Err(Error::InvalidMode)
         }
@@ -516,17 +549,44 @@ where
         }
     }
 
-    /// Returns current accelerometer data in m/s^2 units.
+    /// Returns current accelerometer data in cm/s^2 units.
     /// Available only in modes in which accelerometer is enabled.
-    pub fn accel_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
+    pub fn accel_data_fixed(&mut self) -> Result<mint::Vector3<i16>, Error<E>> {
         match self.mode {
             BNO055OperationMode::ACC_ONLY
             | BNO055OperationMode::ACC_GYRO
             | BNO055OperationMode::ACC_MAG
             | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
-                let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
-                self.read_vec(regs::BNO055_ACC_DATA_X_LSB, scaling)
+                self.read_vec_raw(regs::BNO055_ACC_DATA_X_LSB)
+            }
+
+            _ => Err(Error::InvalidMode),
+        }
+    }
+
+    /// Returns current accelerometer data in m/s^2 units.
+    /// Available only in modes in which accelerometer is enabled.
+    pub fn accel_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
+        let scaling = 1f32 / 100f32; // 1 m/s^2 = 100 lsb
+        let a = self.mag_data_fixed()?;
+        Ok(mint::Vector3::from([
+            a.x as f32 * scaling,
+            a.y as f32 * scaling,
+            a.z as f32 * scaling,
+        ]))
+    }
+
+    /// Returns current gyroscope data in 1/16th deg/s units.
+    /// Available only in modes in which gyroscope is enabled.
+    pub fn gyro_data_fixed(&mut self) -> Result<mint::Vector3<i16>, Error<E>> {
+        match self.mode {
+            BNO055OperationMode::GYRO_ONLY
+            | BNO055OperationMode::ACC_GYRO
+            | BNO055OperationMode::MAG_GYRO
+            | BNO055OperationMode::AMG => {
+                self.set_page(BNO055RegisterPage::PAGE_0)?;
+                self.read_vec_raw(regs::BNO055_GYR_DATA_X_LSB)
             }
 
             _ => Err(Error::InvalidMode),
@@ -536,14 +596,25 @@ where
     /// Returns current gyroscope data in deg/s units.
     /// Available only in modes in which gyroscope is enabled.
     pub fn gyro_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
+        let g = self.gyro_data_fixed()?;
+        let scaling = 1f32 / 16f32; // 1 deg/s = 16 lsb
+        Ok(mint::Vector3::from([
+            g.x as f32 * scaling,
+            g.y as f32 * scaling,
+            g.z as f32 * scaling,
+        ]))
+    }
+
+    /// Returns current magnetometer data in 1/16th uT units.
+    /// Available only in modes in which magnetometer is enabled.
+    pub fn mag_data_fixed(&mut self) -> Result<mint::Vector3<i16>, Error<E>> {
         match self.mode {
-            BNO055OperationMode::GYRO_ONLY
-            | BNO055OperationMode::ACC_GYRO
+            BNO055OperationMode::MAG_ONLY
+            | BNO055OperationMode::ACC_MAG
             | BNO055OperationMode::MAG_GYRO
             | BNO055OperationMode::AMG => {
                 self.set_page(BNO055RegisterPage::PAGE_0)?;
-                let scaling = 1f32 / 16f32; // 1 deg/s = 16 lsb
-                self.read_vec(regs::BNO055_GYR_DATA_X_LSB, scaling)
+                self.read_vec_raw(regs::BNO055_MAG_DATA_X_LSB)
             }
 
             _ => Err(Error::InvalidMode),
@@ -553,18 +624,13 @@ where
     /// Returns current magnetometer data in uT units.
     /// Available only in modes in which magnetometer is enabled.
     pub fn mag_data(&mut self) -> Result<mint::Vector3<f32>, Error<E>> {
-        match self.mode {
-            BNO055OperationMode::MAG_ONLY
-            | BNO055OperationMode::ACC_MAG
-            | BNO055OperationMode::MAG_GYRO
-            | BNO055OperationMode::AMG => {
-                self.set_page(BNO055RegisterPage::PAGE_0)?;
-                let scaling = 1f32 / 16f32; // 1 uT = 16 lsb
-                self.read_vec(regs::BNO055_MAG_DATA_X_LSB, scaling)
-            }
-
-            _ => Err(Error::InvalidMode),
-        }
+        let scaling = 1f32 / 16f32; // 1 uT = 16 lsb
+        let m = self.mag_data_fixed()?;
+        Ok(mint::Vector3::from([
+            m.x as f32 * scaling,
+            m.y as f32 * scaling,
+            m.z as f32 * scaling,
+        ]))
     }
 
     /// Returns current temperature of the chip (in degrees Celsius).
