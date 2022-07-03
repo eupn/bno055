@@ -40,3 +40,8 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all-features
+    - name: Fuzz
+      run: |
+        cargo install cargo-fuzz
+        cargo fuzz run init -- -max_total_time=900
+        cargo fuzz run calibrate -- -max_total_time=1800
