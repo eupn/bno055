@@ -119,4 +119,4 @@ pub(crate) const BNO055_MAG_RADIUS_LSB: u8 = 0x69;
 pub(crate) const BNO055_MAG_RADIUS_MSB: u8 = 0x6A;
 
 /// Sensor config
-pub(crate) const BNO055_ACC_CONFIG: u8 = 0x0D;
+pub(crate) const BNO055_ACC_CONFIG: u8 = 0x08;
