@@ -14,10 +14,12 @@ pub use mint;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+mod acc_config;
 mod regs;
 #[cfg(feature = "std")]
 mod std;
 
+pub use acc_config::{AccBandwidth, AccConfig, AccGRange, AccOperationMode};
 pub use regs::BNO055_ID;
 
 /// All possible errors in this crate
@@ -31,6 +33,9 @@ pub enum Error<E> {
 
     /// Invalid (not applicable) device mode.
     InvalidMode,
+
+    /// Accelerometer configuration error
+    AccConfig(acc_config::Error),
 }
 
 pub struct Bno055<I> {
@@ -460,6 +465,25 @@ where
     /// Checks whether the device is in Sensor Fusion mode or not.
     pub fn is_in_fusion_mode(&mut self) -> Result<bool, Error<E>> {
         Ok(self.mode.is_fusion_enabled())
+    }
+
+    pub fn get_acc_config(&mut self) -> Result<AccConfig, Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+
+        let bits = self.read_u8(regs::BNO055_ACC_CONFIG).map_err(Error::I2c)?;
+
+        let acc_config = AccConfig::try_from_bits(bits).map_err(Error::AccConfig)?;
+
+        Ok(acc_config)
+    }
+
+    pub fn set_acc_config(&mut self, acc_config: &AccConfig) -> Result<(), Error<E>> {
+        self.set_page(BNO055RegisterPage::PAGE_1)?;
+
+        self.write_u8(regs::BNO055_PAGE_ID, acc_config.bits())
+            .map_err(Error::I2c)?;
+
+        Ok(())
     }
 
     /// Sets current register map page.
