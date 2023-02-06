@@ -480,7 +480,7 @@ where
     pub fn set_acc_config(&mut self, acc_config: &AccConfig) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_1)?;
 
-        self.write_u8(regs::BNO055_PAGE_ID, acc_config.bits())
+        self.write_u8(regs::BNO055_ACC_CONFIG, acc_config.bits())
             .map_err(Error::I2c)?;
 
         Ok(())
