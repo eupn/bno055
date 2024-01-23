@@ -4,8 +4,8 @@
 ///! Bosch Sensortec BNO055 9-axis IMU sensor driver.
 ///! Datasheet: https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf
 use embedded_hal::{
-    blocking::delay::DelayMs,
-    blocking::i2c::{Write, WriteRead},
+    delay::DelayNs,
+    i2c::{I2c, SevenBitAddress},
 };
 
 use bitflags::bitflags;
@@ -46,7 +46,7 @@ pub struct Bno055<I> {
 
 impl<I, E> Bno055<I>
 where
-    I: WriteRead<Error = E> + Write<Error = E>,
+    I: I2c<SevenBitAddress, Error = E>,
 {
     /// Side-effect-free constructor.
     /// Nothing will be read or written before `init()` call.
@@ -86,28 +86,32 @@ where
     /// #
     /// # // All of this is needed for example to work:
     /// # use bno055::BNO055_ID;
-    /// # use embedded_hal::blocking::delay::DelayMs;
-    /// # use embedded_hal::blocking::i2c::{WriteRead, Write};
+    /// # use embedded_hal::delay::DelayNs;
+    /// # use embedded_hal::i2c::{I2c as I2cTrait, Operation, Error, ErrorType, ErrorKind};
     /// # struct Delay {}
     /// # impl Delay { pub fn new() -> Self { Delay{ } }}
-    /// # impl DelayMs<u16> for Delay {
-    /// #    fn delay_ms(&mut self, ms: u16) {
+    /// # impl DelayNs for Delay {
+    /// #    fn delay_ns(&mut self, ms: u32) {
     /// #        // no-op for example purposes
     /// #    }
     /// # }
     /// # struct I2c {}
     /// # impl I2c { pub fn new() -> Self { I2c { } }}
-    /// # impl WriteRead for I2c { type Error = (); fn write_read(&mut self, address: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<(), Self::Error> { buffer[0] = BNO055_ID; Ok(()) } }
-    /// # impl Write for I2c { type Error = (); fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> { Ok(()) } }
+    /// # #[derive(Debug)]
+    /// # struct DummyError {}
+    /// # impl Error for DummyError { fn kind(&self) -> ErrorKind { ErrorKind::Other } }
+    /// # impl ErrorType for I2c { type Error = DummyError; }
+    /// # // 3 calls are made, 2 Writes and 1 Write/Read. We want to mock the 3rd call's read.
+    /// # impl I2cTrait for I2c { fn transaction(&mut self, address: u8, operations: &mut [Operation<'_>]) -> Result<(), Self::Error> { match operations.get_mut(1) { Some(Operation::Read(read)) => { read[0] = BNO055_ID; }, _ => {} }; Ok(()) } }
     /// #
     /// # // Actual example:
     /// let mut delay = Delay::new(/* ... */);
     /// let mut i2c = I2c::new(/* ... */);
     /// let mut bno055 = Bno055::new(i2c);
     /// bno055.init(&mut delay)?;
-    /// # Result::<(), bno055::Error<()>>::Ok(())
+    /// # Result::<(), bno055::Error<DummyError>>::Ok(())
     /// ```
-    pub fn init(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
+    pub fn init(&mut self, delay: &mut dyn DelayNs) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let id = self.id()?;
@@ -126,7 +130,7 @@ where
 
     /// Resets the BNO055, initializing the register map to default values.
     /// More in section 3.2.
-    pub fn soft_reset(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
+    pub fn soft_reset(&mut self, delay: &mut dyn DelayNs) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         self.write_u8(
@@ -145,7 +149,7 @@ where
     pub fn set_mode(
         &mut self,
         mode: BNO055OperationMode,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<(), Error<E>> {
         if self.mode != mode {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
@@ -186,7 +190,7 @@ where
     pub fn set_external_crystal(
         &mut self,
         ext: bool,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -275,7 +279,7 @@ where
     pub fn get_system_status(
         &mut self,
         do_selftest: bool,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<BNO055SystemStatus, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -393,7 +397,7 @@ where
     /// Reads current calibration profile of the device.
     pub fn calibration_profile(
         &mut self,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<BNO055Calibration, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -416,7 +420,7 @@ where
     pub fn set_calibration_profile(
         &mut self,
         calib: BNO055Calibration,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
