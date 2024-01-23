@@ -24,6 +24,7 @@ pub use regs::BNO055_ID;
 
 /// All possible errors in this crate
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum Error<E> {
     /// I2C bus error
     I2c(E),
@@ -872,6 +873,7 @@ impl BNO055Calibration {
 }
 
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct BNO055CalibrationStatus {
     pub sys: u8,
     pub gyr: u8,
@@ -898,6 +900,7 @@ bitflags! {
 
 bitflags! {
     /// Possible BNO055 operation modes.
+    #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
     pub struct BNO055OperationMode: u8 {
         const CONFIG_MODE = 0b0000;
         const ACC_ONLY = 0b0001;
