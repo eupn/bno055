@@ -4,8 +4,8 @@
 ///! Bosch Sensortec BNO055 9-axis IMU sensor driver.
 ///! Datasheet: https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf
 use embedded_hal::{
-    blocking::delay::DelayMs,
-    blocking::i2c::{Write, WriteRead},
+    delay::DelayNs,
+    i2c::{I2c, SevenBitAddress},
 };
 
 use bitflags::bitflags;
@@ -46,7 +46,7 @@ pub struct Bno055<I> {
 
 impl<I, E> Bno055<I>
 where
-    I: WriteRead<Error = E> + Write<Error = E>,
+    I: I2c<SevenBitAddress, Error = E>,
 {
     /// Side-effect-free constructor.
     /// Nothing will be read or written before `init()` call.
@@ -90,7 +90,7 @@ where
     /// # use embedded_hal::blocking::i2c::{WriteRead, Write};
     /// # struct Delay {}
     /// # impl Delay { pub fn new() -> Self { Delay{ } }}
-    /// # impl DelayMs<u16> for Delay {
+    /// # impl DelayNs for Delay {
     /// #    fn delay_ms(&mut self, ms: u16) {
     /// #        // no-op for example purposes
     /// #    }
@@ -107,7 +107,7 @@ where
     /// bno055.init(&mut delay)?;
     /// # Result::<(), bno055::Error<()>>::Ok(())
     /// ```
-    pub fn init(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
+    pub fn init(&mut self, delay: &mut dyn DelayNs) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         let id = self.id()?;
@@ -126,7 +126,7 @@ where
 
     /// Resets the BNO055, initializing the register map to default values.
     /// More in section 3.2.
-    pub fn soft_reset(&mut self, delay: &mut dyn DelayMs<u16>) -> Result<(), Error<E>> {
+    pub fn soft_reset(&mut self, delay: &mut dyn DelayNs) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
         self.write_u8(
@@ -145,7 +145,7 @@ where
     pub fn set_mode(
         &mut self,
         mode: BNO055OperationMode,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<(), Error<E>> {
         if self.mode != mode {
             self.set_page(BNO055RegisterPage::PAGE_0)?;
@@ -186,7 +186,7 @@ where
     pub fn set_external_crystal(
         &mut self,
         ext: bool,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -275,7 +275,7 @@ where
     pub fn get_system_status(
         &mut self,
         do_selftest: bool,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<BNO055SystemStatus, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -393,7 +393,7 @@ where
     /// Reads current calibration profile of the device.
     pub fn calibration_profile(
         &mut self,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<BNO055Calibration, Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
@@ -416,7 +416,7 @@ where
     pub fn set_calibration_profile(
         &mut self,
         calib: BNO055Calibration,
-        delay: &mut dyn DelayMs<u16>,
+        delay: &mut dyn DelayNs,
     ) -> Result<(), Error<E>> {
         self.set_page(BNO055RegisterPage::PAGE_0)?;
 
