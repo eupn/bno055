@@ -650,6 +650,7 @@ where
 }
 
 bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055AxisConfig: u8 {
         const AXIS_AS_X = 0b00;
         const AXIS_AS_Y = 0b01;
@@ -671,7 +672,7 @@ impl AxisRemap {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AxisRemap {
     x: BNO055AxisConfig,
     y: BNO055AxisConfig,
@@ -760,6 +761,7 @@ impl AxisRemapBuilder {
 }
 
 bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055AxisSign: u8 {
         const X_NEGATIVE = 0b100;
         const Y_NEGATIVE = 0b010;
@@ -768,6 +770,7 @@ bitflags! {
 }
 
 bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055SystemStatusCode: u8 {
         const SYSTEM_IDLE = 0;
         const SYSTEM_ERROR = 1;
@@ -781,6 +784,7 @@ bitflags! {
 
 bitflags! {
     /// Possible BNO055 errors.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055SystemErrorCode: u8 {
         const NONE = 0;
         const PERIPHERAL_INIT = 1;
@@ -798,6 +802,7 @@ bitflags! {
 
 bitflags! {
     /// BNO055 self-test status bit flags.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055SelfTestStatus: u8 {
         const ACC_OK = 0b0001;
         const MAG_OK = 0b0010;
@@ -806,14 +811,14 @@ bitflags! {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BNO055SystemStatus {
     status: BNO055SystemStatusCode,
     selftest: Option<BNO055SelfTestStatus>,
     error: BNO055SystemErrorCode,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BNO055Revision {
     pub software: u16,
     pub bootloader: u8,
@@ -822,7 +827,7 @@ pub struct BNO055Revision {
     pub gyroscope: u8,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct BNO055Calibration {
@@ -871,7 +876,7 @@ impl BNO055Calibration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BNO055CalibrationStatus {
     pub sys: u8,
     pub gyr: u8,
@@ -881,6 +886,7 @@ pub struct BNO055CalibrationStatus {
 
 bitflags! {
     /// Possible BNO055 register map pages.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055RegisterPage: u8 {
         const PAGE_0 = 0;
         const PAGE_1 = 1;
@@ -889,6 +895,7 @@ bitflags! {
 
 bitflags! {
     /// Possible BNO055 power modes.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055PowerMode: u8 {
         const NORMAL = 0b00;
         const LOW_POWER = 0b01;
@@ -898,6 +905,7 @@ bitflags! {
 
 bitflags! {
     /// Possible BNO055 operation modes.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct BNO055OperationMode: u8 {
         const CONFIG_MODE = 0b0000;
         const ACC_ONLY = 0b0001;
