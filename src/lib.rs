@@ -1,5 +1,6 @@
 #![doc(html_root_url = "https://docs.rs/bno055/0.3.3")]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::bad_bit_mask)]
 
 //! Bosch Sensortec BNO055 9-axis IMU sensor driver.
 //! Datasheet: https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BNO055-DS000.pdf
