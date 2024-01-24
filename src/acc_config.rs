@@ -6,6 +6,7 @@ const ACC_BANDWIDTH_MASK: u8 = 0b000_111_00;
 const ACC_OPERATION_MODE_MASK: u8 = 0b111_000_00;
 
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum Error {
     BadAccGRange,
     BadAccBandwidth,
@@ -13,6 +14,7 @@ pub enum Error {
 }
 
 #[derive(Debug, Clone, Copy, FromPrimitive)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
 pub enum AccGRange {
     G2 = 0b000_000_00,
@@ -22,6 +24,7 @@ pub enum AccGRange {
 }
 
 #[derive(Debug, Clone, Copy, FromPrimitive)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
 pub enum AccBandwidth {
     Hz7_81 = 0b000_000_00,
@@ -35,6 +38,7 @@ pub enum AccBandwidth {
 }
 
 #[derive(Debug, Clone, Copy, FromPrimitive)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
 pub enum AccOperationMode {
     Normal = 0b000_000_00,
@@ -46,6 +50,7 @@ pub enum AccOperationMode {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct AccConfig {
     g_range: AccGRange,
     bandwidth: AccBandwidth,
