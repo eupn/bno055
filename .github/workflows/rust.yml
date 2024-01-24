@@ -60,8 +60,13 @@ jobs:
         run: cargo build --examples
       - name: Run tests
         run: cargo test
-      - name: Fuzz
+      - name: Install cargo-fuzz
+        # pre-build binaries
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
+      - name: Fuzz (nightly only)
+        if: ${{ matrix.rust == 'nightly' }}
         run: |
-          cargo install cargo-fuzz
-          cargo fuzz run init -- -max_total_time=900
-          cargo fuzz run calibrate -- -max_total_time=1800
+          cargo +nightly fuzz run init -- -max_total_time=900
+          cargo +nightly fuzz run calibrate -- -max_total_time=1800
