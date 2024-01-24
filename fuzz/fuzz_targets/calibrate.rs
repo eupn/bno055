@@ -3,26 +3,23 @@
 
 use libfuzzer_sys::fuzz_target;
 
-use embedded_hal::blocking::delay::DelayMs;
-use embedded_hal_fuzz as hal_fuzz;
+use embedded_hal::{delay::DelayNs, i2c::SevenBitAddress};
+use embedded_hal_fuzz::i2c::ArbitraryI2c;
+
 use bno055::{BNO055OperationMode, Bno055};
 
 struct Delay {}
 
 impl Delay { pub fn new() -> Self { Delay{ } }}
 
-impl DelayMs<u16> for Delay {
-   fn delay_ms(&mut self, _ms: u16) {
+impl DelayNs for Delay {
+   fn delay_ns(&mut self, _ns: u32) {
        // no-op, go as fast as possible for fuzzing
    }
 }
 
-type I2cError = ();
 
-fuzz_target!(|data: &[u8]| {
-    use hal_fuzz::shared_data::FuzzData;
-    let data = FuzzData::new(data);
-    let i2c: hal_fuzz::i2c::I2cFuzz<'_, I2cError> = hal_fuzz::i2c::I2cFuzz::new(data);
+fuzz_target!(|i2c: ArbitraryI2c<SevenBitAddress>| {
     let mut delay = Delay::new();
 
     let mut imu = Bno055::new(i2c).with_alternative_address();
