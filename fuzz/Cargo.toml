@@ -10,8 +10,8 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-embedded-hal-fuzz = "0.1.2"
-embedded-hal = "0.2.7"
+embedded-hal-fuzz = "1.0"
+embedded-hal = "1.0"
 
 [dependencies.bno055]
 path = ".."
