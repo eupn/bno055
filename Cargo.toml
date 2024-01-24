@@ -36,7 +36,7 @@ embedded-hal = { version = "1.0" }
 default = []
 std = []
 
-defmt-03 = ["dep:defmt"]
+defmt-03 = ["dep:defmt", "embedded-hal/defmt-03"]
 serde = ["dep:serde", "mint/serde"]
 
 [dev-dependencies]
