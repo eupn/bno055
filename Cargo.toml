@@ -21,17 +21,15 @@ readme = "README.md"
 byteorder = { version = "1", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
 mint = "^0.5.4"
-bitflags = "1"
+bitflags = "2"
 num-traits = { version = "0.2.15", default-features = false, features = ["libm"] }
 num-derive = "0.4.1"
 
-[dependencies.embedded-hal]
-version = "0.2.2"
-features = ["unproven"]
+embedded-hal = { version = "1.0" }
 
 [features]
 default = []
 std = []
 
 [dev-dependencies]
-linux-embedded-hal = "0.3"
+linux-embedded-hal = "0.4"
