@@ -1,11 +1,16 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+#[allow(clippy::unusual_byte_groupings)]
 const ACC_G_RANGE_MASK: u8 = 0b000_000_11;
+#[allow(clippy::unusual_byte_groupings)]
 const ACC_BANDWIDTH_MASK: u8 = 0b000_111_00;
+#[allow(clippy::unusual_byte_groupings)]
 const ACC_OPERATION_MODE_MASK: u8 = 0b111_000_00;
 
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[allow(clippy::enum_variant_names)]
 pub enum Error {
     BadAccGRange,
     BadAccBandwidth,
@@ -13,7 +18,9 @@ pub enum Error {
 }
 
 #[derive(Debug, Clone, Copy, FromPrimitive)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
+#[allow(clippy::unusual_byte_groupings)]
 pub enum AccGRange {
     G2 = 0b000_000_00,
     G4 = 0b000_000_01,
@@ -22,7 +29,9 @@ pub enum AccGRange {
 }
 
 #[derive(Debug, Clone, Copy, FromPrimitive)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
+#[allow(clippy::unusual_byte_groupings)]
 pub enum AccBandwidth {
     Hz7_81 = 0b000_000_00,
     Hz15_63 = 0b000_001_00,
@@ -35,7 +44,9 @@ pub enum AccBandwidth {
 }
 
 #[derive(Debug, Clone, Copy, FromPrimitive)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[repr(u8)]
+#[allow(clippy::unusual_byte_groupings)]
 pub enum AccOperationMode {
     Normal = 0b000_000_00,
     Suspend = 0b001_000_00,
@@ -46,6 +57,7 @@ pub enum AccOperationMode {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct AccConfig {
     g_range: AccGRange,
     bandwidth: AccBandwidth,

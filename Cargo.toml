@@ -17,6 +17,9 @@ keywords = [
 license-file = "LICENSE"
 readme = "README.md"
 
+# linux-embedded-hal requires 1.65 because of nix
+rust-version = "1.65"
+
 [dependencies]
 byteorder = { version = "1", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
@@ -25,11 +28,16 @@ bitflags = "2"
 num-traits = { version = "0.2.15", default-features = false, features = ["libm"] }
 num-derive = "0.4.1"
 
+defmt = { version = "0.3", optional = true }
+
 embedded-hal = { version = "1.0" }
 
 [features]
 default = []
 std = []
+
+defmt-03 = ["dep:defmt", "embedded-hal/defmt-03"]
+serde = ["dep:serde", "mint/serde"]
 
 [dev-dependencies]
 linux-embedded-hal = "0.4"

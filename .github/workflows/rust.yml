@@ -10,38 +10,63 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  lints-and-checks:
+    name: Lints and checks
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+            components: rustfmt, clippy, rust-docs
+
+      - name: Rustfmt lints
+        run: cargo fmt --all -- --check
+
+      - name: Clippy lints
+        run: cargo clippy --no-deps -- -D warnings
+
+      - name: Build docs
+        run: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features --no-deps
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - "1.65" # MSRV
 
     steps:
-    - name: Install Rust (thumbv7em)
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: nightly
-        override: true
-        target: thumbv7em-none-eabihf
-        components: clippy
-    - name: Checkout Sources
-      uses: actions/checkout@v2
-    - name: Build - default features
-      run: cargo build
-    - name: Build - std
-      run: cargo build --features "std"
-    - name: Build - serde
-      run: cargo build --features "serde"
-    - name: Build - examples
-      run: cargo build --examples
-    - name: Test - docs
-      run: cargo test --doc
-    - name: Clippy
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --all-features
-    - name: Fuzz
-      run: |
-        cargo install cargo-fuzz
-        cargo fuzz run init -- -max_total_time=900
-        cargo fuzz run calibrate -- -max_total_time=1800
+      - name: Checkout Sources
+        uses: actions/checkout@v4
+      - name: Install Rust (thumbv7em)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: thumbv7em-none-eabihf
+      - name: Build - default features
+        run: cargo build
+      - name: Build - std
+        run: cargo build --features "std"
+      - name: Build - serde
+        run: cargo build --features "serde"
+      - name: Build - defmt-03
+        run: cargo build --features "defmt-03"
+      - name: Build - examples
+        run: cargo build --examples
+      - name: Run tests
+        run: cargo test
+      - name: Install cargo-fuzz
+        # pre-build binaries
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
+      - name: Fuzz (nightly only)
+        if: ${{ matrix.rust == 'nightly' }}
+        run: |
+          cargo +nightly fuzz run init -- -max_total_time=900
+          cargo +nightly fuzz run calibrate -- -max_total_time=1800
