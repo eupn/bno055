@@ -17,8 +17,8 @@ keywords = [
 license-file = "LICENSE"
 readme = "README.md"
 
-# `dep:...` in features is only available from 1.60 on
-rust-version = "1.60"
+# linux-embedded-hal requires 1.65 because of nix
+rust-version = "1.65"
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
