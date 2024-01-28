@@ -341,12 +341,15 @@ where
 
             let scale = 1.0 / ((1 << 14) as f32);
 
-            let quat = mint::Quaternion::from([
-                w as f32 * scale,
-                x as f32 * scale,
-                y as f32 * scale,
-                z as f32 * scale,
-            ]);
+            let x = x as f32 * scale;
+            let y = y as f32 * scale;
+            let z = z as f32 * scale;
+            let w = w as f32 * scale;
+
+            let quat = mint::Quaternion {
+                v: mint::Vector3 { x, y, z },
+                s: w,
+            };
 
             Ok(quat)
         } else {
