@@ -23,17 +23,19 @@ and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor re
 
 ### `std`
 
-By default, this crate is `no_std` compatible. However you can enable `std` features by enabling the `std` feature flag. At the moment this only adds `std::error::Error` trait implementation for the `Error` type.
+By default, this crate is `no_std` compatible. However, you can enable `std` features by enabling the `std` feature flag.
+At the moment this only adds `std::error::Error` trait implementation for the `Error` type.
 
 ### `serde`
 
 The `serde` flag adds implementation of `Serialize` / `Deserialize` to `BNO055Calibration`.
 
-**Note:** `serde` itself is `no_std` compatible however not all serializers are (e.g. `serde-json` is not but `serde-json-core` is), so be careful that you're not enabling `serde`'s `std` feature by accident (see [here](https://serde.rs/no-std.html#no-std-support) for a complete explanation).
+**Note:** `serde` itself is `no_std` compatible, however not all serializers are (e.g. `serde-json` is not but `serde-json-core` is),
+so be careful that you're not enabling `serde`'s `std` feature by accident (see [here](https://serde.rs/no-std.html#no-std-support) for a complete explanation).
 
 ## Usage
 
-1. Add dependency to `Cargo.toml`:
+1. Add a dependency to `Cargo.toml`:
 
     ```bash
     cargo add bno055
@@ -72,7 +74,7 @@ The `serde` flag adds implementation of `Serialize` / `Deserialize` to `BNO055Ca
 
 ### Device calibration
 
-To calibrate device's sensors for first time:
+To calibrate the device's sensors for first time:
 
 ```rust
 use bno055::{BNO055Calibration, BNO055OperationMode, BNO055_CALIB_SIZE};
@@ -94,7 +96,7 @@ let calib = bno055.calibration_profile()?;
 mcu.nvram_write(BNO055_CALIB_ADDR, calib.as_bytes(), BNO055_CALIB_SIZE)?;
 ```
 
-To load previously saved calibration profile:
+To load a previously saved calibration profile:
 
 ```rust
 use bno055::{BNO055Calibration, BNO055OperationMode, BNO055_CALIB_SIZE};
@@ -113,8 +115,8 @@ bno055.set_calibration_profile(calib)?;
 ### Remapping of axes to correspond your mounting
 
 BNO055 allows to change default axes to meet the chip orientation with
-actual physical device orientation, thus providing possibility to place BNO055
-chip on PCB as suitable for a designer and to match chip's axes to physical
+an actual physical device orientation, thus providing possibility to place BNO055
+chip on PCB as suitable for the designer and to match the chip's axes to physical
 axes in software later.
 
 ```rust
@@ -130,7 +132,7 @@ let remap = AxisRemap::builder()
 bno055.set_axis_remap(remap)?;
 ```
 
-Please note that `AxisRemap` (and the chip itself) builder doesn't allow invalid state to be constructed,
+Please note that `AxisRemap` builder (and the chip itself) doesn't allow an invalid state to be constructed,
 that is, when one axis is swapped with multiple of others.
 For example, swapping axis `X` with both `Y` and `Z` at the same time is not allowed:
 
@@ -144,7 +146,7 @@ AxisRemap::builder()
 
 ### Changing axes sign
 
-It is also possible to flip sign of either axis of the chip.
+It is also possible to flip the sign of either axis of the chip.
 
 Example of flipping X and Y axes:
 
@@ -156,9 +158,9 @@ bno055
 
 ### Using external 32k crystal
 
-For better performance, it is advised to connect and use external 32k quartz crystal.
+For better performance, it is recommended to connect and use external 32k quartz crystal.
 
-User could enable or disable it by calling `set_external_crystal`:
+You enable or disable its use by calling `set_external_crystal`:
 
 ```rust
 bno055
@@ -171,7 +173,7 @@ bno055
 BNO055 allows to change its I2C address from default `0x29` to alternative `0x28` by setting
 `COM3` pin `LOW`.
 
-To connect to device with alternative address, enable its use by calling `with_alternative_address()`:
+To connect to device with an alternative address, enable its use by calling `with_alternative_address()`:
 
 ```rust
 // use default 0x29 address
@@ -233,3 +235,7 @@ What is done and tested and what is not yet:
 - [ ] Per-sensor configuration (when not in fusion mode)
 - [ ] Unit selection
 - [ ] Interrupts
+
+License: MIT.
+
+**Contributions welcomed!**
