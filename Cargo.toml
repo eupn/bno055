@@ -1,7 +1,7 @@
 [package]
 name = "bno055"
 description = "Bosch Sensortec BNO055 9-axis IMU driver"
-version = "0.3.3" # Remember to update lib.rs
+version = "0.4.0" # Remember to update lib.rs
 authors = ["Eugene P. <eupn@protonmail.com>", "Henrik B. <hargonix@gmail.com>"]
 repository = "https://github.com/eupn/bno055"
 edition = "2018"

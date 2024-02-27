@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/bno055/0.3.3")]
+#![doc(html_root_url = "https://docs.rs/bno055/0.4.0")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::bad_bit_mask)]
 
