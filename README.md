@@ -19,6 +19,13 @@ Uses and re-exports [mint](https://crates.io/crates/mint)'s
 and [EulerAngles](https://docs.rs/mint/0.5.1/mint/struct.EulerAngles.html) for Euler angles
 and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor readings.
 
+## Important note on I2C issues
+As [noted e.g. by Adafruit](https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor) the sensor has issues
+with its I2C implementation, which causes it to not work correctly with certain microcontrollers.
+
+This seems to be caused by clock stretching, thus running at lower I2C speeds and with increased I2C timeouts should
+resolve the issue.
+
 ## Feature flags
 
 ### `std`
