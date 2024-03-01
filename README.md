@@ -49,12 +49,12 @@ so be careful that you're not enabling `serde`'s `std` feature by accident (see 
     // let delay = ...;
 
     // Init BNO055 IMU
-    let imu = bno055::Bno055::new(i2c);
+    let mut imu = bno055::Bno055::new(i2c);
 
     imu.init(&mut delay)?;
 
     // Enable 9-degrees-of-freedom sensor fusion mode with fast magnetometer calibration
-    imu.set_mode(bno055::BNO055OperationMode::NDOF)?;
+    imu.set_mode(bno055::BNO055OperationMode::NDOF, &mut delay)?;
 
     Ok(imu)
     ```
