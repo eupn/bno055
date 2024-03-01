@@ -19,6 +19,20 @@ Uses and re-exports [mint](https://crates.io/crates/mint)'s
 and [EulerAngles](https://docs.rs/mint/0.5.1/mint/struct.EulerAngles.html) for Euler angles
 and [Vector3](https://docs.rs/mint/0.5.1/mint/struct.Vector3.html) for sensor readings.
 
+## Usage notes
+### Important note on I2C issues
+As [noted e.g. by Adafruit](https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor) the sensor has issues
+with its I2C implementation, which causes it to not work correctly with certain microcontrollers.
+
+This seems to be caused by clock stretching, thus running at lower I2C speeds and with increased I2C timeouts should
+resolve the issue.
+
+### Initial startup delay
+The sensor has an initial startup time during which interaction with it will fail.
+As per [the documentation](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bno055-ds000.pdf)
+this is in the 400ms - 650ms range (consult chapter 1.2 / page 14 for further details).
+If your microcontroller is faster in starting up you might have to delay before talking to the sensor (or retry on failure).
+
 ## Feature flags
 
 ### `std`
@@ -49,12 +63,12 @@ so be careful that you're not enabling `serde`'s `std` feature by accident (see 
     // let delay = ...;
 
     // Init BNO055 IMU
-    let imu = bno055::Bno055::new(i2c);
+    let mut imu = bno055::Bno055::new(i2c);
 
     imu.init(&mut delay)?;
 
     // Enable 9-degrees-of-freedom sensor fusion mode with fast magnetometer calibration
-    imu.set_mode(bno055::BNO055OperationMode::NDOF)?;
+    imu.set_mode(bno055::BNO055OperationMode::NDOF, &mut delay)?;
 
     Ok(imu)
     ```
