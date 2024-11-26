@@ -191,12 +191,12 @@ To connect to device with an alternative address, enable its use by calling `wit
 
 ```rust
 // use default 0x29 address
-let mut bno = bno055::Bno055::new(i2c, delay);
+let mut bno = bno055::Bno055::new(i2c);
 
 // or:
 
 // use 0x28 address
-let mut bno = bno055::Bno055::new(i2c, delay).with_alternative_address();
+let mut bno = bno055::Bno055::new(i2c).with_alternative_address();
 ```
 
 ### Change BNO055 power mode
